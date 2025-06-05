@@ -1,5 +1,6 @@
 
 import { LayoutDashboard, Library, Cog, BarChart3, Bell, HelpCircle, Zap } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface SidebarProps {
   activeSection: string;
@@ -17,13 +18,13 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
   ];
 
   return (
-    <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
-      <div className="p-6 border-b border-gray-700">
+    <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+      <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
+            <Zap className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
-          <h1 className="text-xl font-bold text-white">FlowState</h1>
+          <h1 className="text-xl font-bold text-sidebar-foreground">FlowState</h1>
         </div>
       </div>
       
@@ -37,8 +38,8 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
                   onClick={() => setActiveSection(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     activeSection === item.id
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -49,6 +50,16 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
           })}
         </ul>
       </nav>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-sidebar-accent rounded-full"></div>
+            <div className="text-sm text-sidebar-foreground">John Doe</div>
+          </div>
+          <ThemeToggle />
+        </div>
+      </div>
     </div>
   );
 };

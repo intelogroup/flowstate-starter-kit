@@ -1,12 +1,32 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import Sidebar from "@/components/Sidebar";
+import Dashboard from "@/components/Dashboard";
+import TemplateLibrary from "@/components/TemplateLibrary";
+import MyAutomations from "@/components/MyAutomations";
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState("dashboard");
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return <Dashboard />;
+      case "templates":
+        return <TemplateLibrary />;
+      case "automations":
+        return <MyAutomations />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gray-900 flex">
+      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+      <main className="flex-1">
+        {renderContent()}
+      </main>
     </div>
   );
 };

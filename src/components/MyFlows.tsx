@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const MyFlows = () => {
+  const navigate = useNavigate();
+
   const flows = [
     {
       id: 1,
@@ -74,6 +78,21 @@ const MyFlows = () => {
     }
   };
 
+  const handleRunFlow = (flowId: number, flowName: string) => {
+    toast({
+      title: "Flow Triggered",
+      description: `${flowName} has been manually triggered and is now running.`,
+    });
+  };
+
+  const handleToggleFlow = (flowId: number, currentStatus: string, flowName: string) => {
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    toast({
+      title: `Flow ${newStatus === 'active' ? 'Activated' : 'Paused'}`,
+      description: `${flowName} has been ${newStatus === 'active' ? 'activated' : 'paused'}.`,
+    });
+  };
+
   return (
     <div className="p-6 space-y-6 bg-background">
       {/* Header */}
@@ -82,7 +101,7 @@ const MyFlows = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">My Flows</h1>
           <p className="text-muted-foreground">Manage and monitor your automation workflows</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={() => navigate('/create-flow')}>
           <Plus className="w-4 h-4 mr-2" />
           Create New Flow
         </Button>
@@ -152,7 +171,7 @@ const MyFlows = () => {
       {/* Flows List */}
       <div className="space-y-4">
         {flows.map((flow) => (
-          <Card key={flow.id} className="hover:shadow-md transition-shadow">
+          <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/flow/${flow.id}`)}>
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-4">
@@ -186,8 +205,19 @@ const MyFlows = () => {
                 </div>
                 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleRunFlow(flow.id, flow.name)}
+                  >
+                    <Play className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleToggleFlow(flow.id, flow.status, flow.name)}
+                  >
                     {flow.status === 'active' ? (
                       <Pause className="w-4 h-4" />
                     ) : (

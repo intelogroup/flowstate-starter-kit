@@ -7,6 +7,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import FlowDetails from "./components/FlowDetails";
+import FlowWizard from "./components/FlowWizard";
+import TemplatePreview from "./components/TemplatePreview";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +22,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/flow/:id" element={<FlowDetails />} />
+            <Route path="/create-flow" element={<FlowWizard />} />
+            <Route path="/create-flow/:templateId" element={<FlowWizard />} />
+            <Route path="/template/:id" element={<TemplatePreview />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

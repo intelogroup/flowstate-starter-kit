@@ -1,10 +1,20 @@
-import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause } from "lucide-react";
+import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import FlowSearchChat from "./FlowSearchChat";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [showAISearch, setShowAISearch] = useState(false);
+
+  const handleTemplateSelect = (templateId: number) => {
+    navigate(`/create-flow/${templateId}`);
+  };
+
   const featuredTemplates = [
     {
       id: 1,
@@ -113,6 +123,34 @@ const Dashboard = () => {
             <Button variant="ghost" size="sm" className="text-blue-700 dark:text-blue-300">×</Button>
           </div>
         </CardContent>
+      </Card>
+
+      {/* AI Search Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">AI-Powered Flow Discovery</CardTitle>
+                <p className="text-sm text-muted-foreground">Describe what you want to automate and get personalized recommendations</p>
+              </div>
+            </div>
+            <Button 
+              variant={showAISearch ? "secondary" : "default"}
+              onClick={() => setShowAISearch(!showAISearch)}
+            >
+              {showAISearch ? "Hide" : "Search Flow with AI"}
+            </Button>
+          </div>
+        </CardHeader>
+        {showAISearch && (
+          <CardContent>
+            <FlowSearchChat onTemplateSelect={handleTemplateSelect} />
+          </CardContent>
+        )}
       </Card>
 
       {/* Featured Templates Section */}

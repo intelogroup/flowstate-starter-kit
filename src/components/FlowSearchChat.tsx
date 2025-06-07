@@ -34,7 +34,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
     {
       id: "1",
       type: "ai",
-      content: "Hi! I'm here to help you find the perfect automation flow. Just describe what you want to automate and I'll find matching templates for you.",
+      content: "What would you like to automate today?",
       timestamp: new Date(),
     }
   ]);
@@ -44,18 +44,18 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
 
   const quickSuggestions = [
     "Save Gmail attachments to Google Drive",
-    "Get WhatsApp notifications for important emails",
-    "Auto-create Trello cards from emails",
-    "Send Slack notifications for new sales",
-    "Backup new photos to cloud storage"
+    "Get WhatsApp alerts for urgent emails",
+    "Auto-organize photos by date",
+    "Send Slack notifications for new orders",
+    "Create Trello cards from support emails"
   ];
 
   const mockAIResponse = (userInput: string): { content: string; suggestions?: FlowSuggestion[] } => {
     const input = userInput.toLowerCase();
     
-    if (input.includes("email") && input.includes("drive")) {
+    if (input.includes("email") && (input.includes("drive") || input.includes("save") || input.includes("attachment"))) {
       return {
-        content: "I found some great email-to-drive automation templates! These will help you automatically save email attachments to your cloud storage.",
+        content: "Found 2 flows for email-to-drive automation:",
         suggestions: [
           {
             id: 1,
@@ -71,7 +71,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
             id: 4,
             title: "Invoice Processor",
             description: "Extract invoice attachments and organize them by date.",
-            confidence: 82,
+            confidence: 85,
             category: "Finance",
             tags: ["email", "invoices", "drive"],
             icon: "mail",
@@ -81,9 +81,9 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
       };
     }
     
-    if (input.includes("whatsapp") || input.includes("notification")) {
+    if (input.includes("whatsapp") || input.includes("notification") || input.includes("alert")) {
       return {
-        content: "Perfect! I found several notification automation templates that can send alerts to WhatsApp or other messaging platforms.",
+        content: "Perfect! Here's a flow for WhatsApp notifications:",
         suggestions: [
           {
             id: 2,
@@ -99,8 +99,62 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
       };
     }
 
+    if (input.includes("sheet") || input.includes("spreadsheet") || input.includes("excel")) {
+      return {
+        content: "Found flows for spreadsheet automation:",
+        suggestions: [
+          {
+            id: 3,
+            title: "Email to Sheets",
+            description: "Log email details to Google Sheets for tracking.",
+            confidence: 88,
+            category: "Data Management",
+            tags: ["email", "sheets", "data entry"],
+            icon: "mail",
+            targetIcon: "file-spreadsheet"
+          }
+        ]
+      };
+    }
+
+    if (input.includes("social") || input.includes("post") || input.includes("schedule")) {
+      return {
+        content: "Here's a social media automation flow:",
+        suggestions: [
+          {
+            id: 5,
+            title: "Social Media Scheduler",
+            description: "Schedule posts across multiple social media platforms.",
+            confidence: 90,
+            category: "Marketing",
+            tags: ["social media", "scheduling", "content"],
+            icon: "message-square",
+            targetIcon: "message-square"
+          }
+        ]
+      };
+    }
+
+    if (input.includes("crm") || input.includes("lead") || input.includes("sales")) {
+      return {
+        content: "Found a CRM automation flow:",
+        suggestions: [
+          {
+            id: 6,
+            title: "Lead Capture to CRM",
+            description: "Automatically add new leads from forms to your CRM system.",
+            confidence: 87,
+            category: "Sales",
+            tags: ["crm", "leads", "sales"],
+            icon: "mail",
+            targetIcon: "file-spreadsheet"
+          }
+        ]
+      };
+    }
+
     return {
-      content: "I understand you're looking for an automation solution. Could you provide more details about what services or apps you want to connect? For example, are you working with emails, files, social media, or something else?",
+      content: "Can you be more specific? For example: 'save Gmail attachments' or 'send WhatsApp alerts'",
     };
   };
 
@@ -131,7 +185,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
 
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1500);
+    }, 1200);
   };
 
   const handleQuickSuggestion = (suggestion: string) => {
@@ -150,8 +204,8 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
           <Sparkles className="w-4 h-4 text-primary-foreground" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">AI Flow Assistant</h3>
-          <p className="text-sm text-muted-foreground">Describe your automation needs</p>
+          <h3 className="font-semibold text-foreground">AI Flow Search</h3>
+          <p className="text-sm text-muted-foreground">Tell me what you want to automate</p>
         </div>
       </div>
 
@@ -189,7 +243,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
                             </Badge>
                           </div>
                           <Button size="sm" variant="outline">
-                            Use Template
+                            Use Flow
                           </Button>
                         </div>
                         <h4 className="font-semibold text-foreground mb-1">{suggestion.title}</h4>
@@ -242,7 +296,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
       {/* Quick Suggestions */}
       {messages.length === 1 && (
         <div className="p-4 border-t border-border">
-          <p className="text-sm text-muted-foreground mb-3">Try these popular automations:</p>
+          <p className="text-sm text-muted-foreground mb-3">Popular automations:</p>
           <div className="flex flex-wrap gap-2">
             {quickSuggestions.map((suggestion, index) => (
               <Button
@@ -265,7 +319,7 @@ const FlowSearchChat = ({ onTemplateSelect }: FlowSearchChatProps) => {
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Describe what you want to automate..."
+            placeholder="Describe your automation (e.g., 'save email attachments to drive')"
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             className="flex-1"
           />

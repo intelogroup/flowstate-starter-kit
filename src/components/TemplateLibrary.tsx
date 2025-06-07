@@ -1,4 +1,3 @@
-
 import { Search, Filter, Grid, List, Mail, MessageSquare, FileSpreadsheet, Plus, Play, Eye, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,7 +119,7 @@ const TemplateLibrary = () => {
               variant={showAISearch ? "secondary" : "default"}
               onClick={() => setShowAISearch(!showAISearch)}
             >
-              {showAISearch ? "Hide" : "Try AI Search"}
+              {showAISearch ? "Hide" : "Search Flow with AI"}
             </Button>
           </div>
         </CardHeader>

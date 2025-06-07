@@ -1,12 +1,15 @@
-
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Download, Calendar, BarChart3, PieChart, Activity } from "lucide-react";
+import { TrendingUp, Download, Calendar, BarChart3, PieChart, Activity, RefreshCw } from "lucide-react";
 import FlowMetricsCard from "./FlowMetricsCard";
 
 const FlowAnalytics = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+
   const performanceData = [
     { date: "2024-01-10", executions: 45, success: 42, failures: 3, avgDuration: 2.1 },
     { date: "2024-01-11", executions: 52, success: 50, failures: 2, avgDuration: 1.9 },
@@ -30,8 +33,44 @@ const FlowAnalytics = () => {
     { type: "Other", count: 5, size: "1.2 MB", percentage: 1 }
   ];
 
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastUpdated(new Date());
+    }, 2000);
+  };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastUpdated(new Date());
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6">
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Analytics</h2>
+          <p className="text-sm text-muted-foreground">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Updating...' : 'Refresh'}
+        </Button>
+      </div>
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <FlowMetricsCard
@@ -90,7 +129,12 @@ const FlowAnalytics = () => {
           <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Execution Trends</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  Execution Trends
+                  {isRefreshing && (
+                    <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

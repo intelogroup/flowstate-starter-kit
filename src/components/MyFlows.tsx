@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Plus, Play, Pause, Settings, MoreHorizontal, Workflow, ArrowRight, Clock, TrendingUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,16 +7,35 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import FlowActivationModal from "./FlowActivationModal";
+import FlowStatusIndicator from "./FlowStatusIndicator";
 
 const MyFlows = () => {
   const navigate = useNavigate();
+  const [activationModal, setActivationModal] = useState<{
+    isOpen: boolean;
+    flowId: number | null;
+    flowName: string;
+    action: 'activate' | 'deactivate';
+  }>({
+    isOpen: false,
+    flowId: null,
+    flowName: '',
+    action: 'activate'
+  });
+  const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
+  const [flowStatuses, setFlowStatuses] = useState<Record<number, string>>({
+    1: 'active',
+    2: 'active', 
+    3: 'paused',
+    4: 'error'
+  });
 
   const flows = [
     {
       id: 1,
       name: "Email Invoice Processing",
       description: "Automatically process invoices from email attachments and save to Google Drive",
-      status: "active",
       trigger: "Gmail",
       actions: ["Google Drive", "Google Sheets", "Slack"],
       lastRun: "2 min ago",
@@ -28,7 +48,6 @@ const MyFlows = () => {
       id: 2,
       name: "Customer Support Flow",
       description: "Route support emails to appropriate Slack channels and create Notion tickets",
-      status: "active",
       trigger: "Gmail",
       actions: ["Slack", "Notion", "Email"],
       lastRun: "15 min ago",
@@ -41,7 +60,6 @@ const MyFlows = () => {
       id: 3,
       name: "Lead Qualification",
       description: "Qualify leads from contact forms and add to CRM with follow-up emails",
-      status: "paused",
       trigger: "Webhook",
       actions: ["CRM", "Email", "Google Sheets"],
       lastRun: "2 hours ago",
@@ -54,7 +72,6 @@ const MyFlows = () => {
       id: 4,
       name: "Social Media Monitor",
       description: "Monitor brand mentions and send alerts to marketing team",
-      status: "error",
       trigger: "Twitter API",
       actions: ["Slack", "Email", "Database"],
       lastRun: "1 day ago",
@@ -65,32 +82,49 @@ const MyFlows = () => {
     }
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'paused':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'error':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
-  };
-
   const handleRunFlow = (flowId: number, flowName: string) => {
-    toast({
-      title: "Flow Triggered",
-      description: `${flowName} has been manually triggered and is now running.`,
-    });
+    setLoadingFlows(prev => new Set(prev).add(flowId));
+    
+    setTimeout(() => {
+      setLoadingFlows(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(flowId);
+        return newSet;
+      });
+      
+      toast({
+        title: "Flow Triggered",
+        description: `${flowName} has been manually triggered and is now running.`,
+      });
+    }, 2000);
   };
 
   const handleToggleFlow = (flowId: number, currentStatus: string, flowName: string) => {
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-    toast({
-      title: `Flow ${newStatus === 'active' ? 'Activated' : 'Paused'}`,
-      description: `${flowName} has been ${newStatus === 'active' ? 'activated' : 'paused'}.`,
+    const newAction = currentStatus === 'active' ? 'deactivate' : 'activate';
+    
+    setActivationModal({
+      isOpen: true,
+      flowId,
+      flowName,
+      action: newAction
     });
+  };
+
+  const handleActivationComplete = () => {
+    if (activationModal.flowId) {
+      const newStatus = activationModal.action === 'activate' ? 'active' : 'paused';
+      setFlowStatuses(prev => ({
+        ...prev,
+        [activationModal.flowId!]: newStatus
+      }));
+      
+      toast({
+        title: `Flow ${activationModal.action === 'activate' ? 'Activated' : 'Paused'}`,
+        description: `${activationModal.flowName} has been ${activationModal.action === 'activate' ? 'activated' : 'paused'}.`,
+      });
+    }
+    
+    setActivationModal({ isOpen: false, flowId: null, flowName: '', action: 'activate' });
   };
 
   return (
@@ -181,9 +215,10 @@ const MyFlows = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-foreground">{flow.name}</h3>
-                      <Badge className={getStatusColor(flow.status)}>
-                        {flow.status}
-                      </Badge>
+                      <FlowStatusIndicator 
+                        status={flowStatuses[flow.id]} 
+                        isLoading={loadingFlows.has(flow.id)}
+                      />
                     </div>
                     <p className="text-muted-foreground mb-3">{flow.description}</p>
                     
@@ -210,15 +245,17 @@ const MyFlows = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleRunFlow(flow.id, flow.name)}
+                    disabled={loadingFlows.has(flow.id)}
                   >
                     <Play className="w-4 h-4" />
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleToggleFlow(flow.id, flow.status, flow.name)}
+                    onClick={() => handleToggleFlow(flow.id, flowStatuses[flow.id], flow.name)}
+                    disabled={loadingFlows.has(flow.id)}
                   >
-                    {flow.status === 'active' ? (
+                    {flowStatuses[flow.id] === 'active' ? (
                       <Pause className="w-4 h-4" />
                     ) : (
                       <Play className="w-4 h-4" />
@@ -260,6 +297,13 @@ const MyFlows = () => {
           </Card>
         ))}
       </div>
+
+      <FlowActivationModal
+        isOpen={activationModal.isOpen}
+        onClose={handleActivationComplete}
+        flowName={activationModal.flowName}
+        action={activationModal.action}
+      />
     </div>
   );
 };

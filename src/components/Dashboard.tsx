@@ -1,4 +1,4 @@
-import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles } from "lucide-react";
+import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Settings, Bell, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,11 +97,19 @@ const Dashboard = () => {
               className="pl-10 w-80"
             />
           </div>
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm">
-            <Clock className="w-4 h-4 mr-2" />
-            Schedule
+            <Bell className="w-4 h-4 mr-2" />
+            Notifications
+          </Button>
+          <Button variant="outline" size="sm">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
           </Button>
           <div className="text-foreground font-medium">John Doe</div>
           <div className="w-8 h-8 bg-primary rounded-full"></div>
@@ -127,27 +135,28 @@ const Dashboard = () => {
 
       {/* AI Search Section */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
               <div>
-                <CardTitle className="text-lg">AI-Powered Flow Discovery</CardTitle>
-                <p className="text-sm text-muted-foreground">Describe what you want to automate and get personalized recommendations</p>
+                <CardTitle className="text-base">AI Flow Search</CardTitle>
+                <p className="text-xs text-muted-foreground">Describe what you want to automate</p>
               </div>
             </div>
             <Button 
               variant={showAISearch ? "secondary" : "default"}
+              size="sm"
               onClick={() => setShowAISearch(!showAISearch)}
             >
-              {showAISearch ? "Hide" : "Search Flow with AI"}
+              {showAISearch ? "Hide" : "AI Search"}
             </Button>
           </div>
         </CardHeader>
         {showAISearch && (
-          <CardContent>
+          <CardContent className="pt-0">
             <FlowSearchChat onTemplateSelect={handleTemplateSelect} />
           </CardContent>
         )}

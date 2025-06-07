@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/components/Dashboard";
 import TemplateLibrary from "@/components/TemplateLibrary";
 import MyAutomations from "@/components/MyAutomations";
+import MyFlows from "@/components/MyFlows";
 import Analytics from "@/components/Analytics";
 import Notifications from "@/components/Notifications";
 import HelpSupport from "@/components/HelpSupport";
@@ -19,6 +20,8 @@ const Index = () => {
         return <TemplateLibrary />;
       case "automations":
         return <MyAutomations />;
+      case "flows":
+        return <MyFlows />;
       case "analytics":
         return <Analytics />;
       case "notifications":

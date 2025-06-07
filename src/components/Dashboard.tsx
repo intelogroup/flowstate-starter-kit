@@ -1,5 +1,4 @@
-
-import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight } from "lucide-react";
+import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +32,39 @@ const Dashboard = () => {
       icon: Mail,
       targetIcon: FileSpreadsheet,
       users: "520 users"
+    }
+  ];
+
+  const activeFlows = [
+    {
+      id: 1,
+      name: "Email Invoice Processing",
+      description: "Automatically process invoices from email",
+      status: "active",
+      trigger: "Gmail",
+      actions: ["Google Drive", "Google Sheets"],
+      lastRun: "2 min ago",
+      runsToday: 12
+    },
+    {
+      id: 2,
+      name: "Customer Support Flow",
+      description: "Route support emails to Slack",
+      status: "active", 
+      trigger: "Gmail",
+      actions: ["Slack", "Notion"],
+      lastRun: "15 min ago",
+      runsToday: 8
+    },
+    {
+      id: 3,
+      name: "Lead Qualification",
+      description: "Qualify leads from contact forms",
+      status: "paused",
+      trigger: "Webhook",
+      actions: ["CRM", "Email"],
+      lastRun: "2 hours ago",
+      runsToday: 0
     }
   ];
 
@@ -124,6 +156,62 @@ const Dashboard = () => {
               </Card>
             );
           })}
+        </div>
+      </div>
+
+      {/* Active Flows Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">Active Flows</h2>
+            <p className="text-sm text-muted-foreground">Your running automation workflows</p>
+          </div>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Flow
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {activeFlows.slice(0, 4).map((flow) => (
+            <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Workflow className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">{flow.name}</h3>
+                      <p className="text-sm text-muted-foreground">{flow.description}</p>
+                    </div>
+                  </div>
+                  <Badge variant={flow.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                    {flow.status}
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-medium text-muted-foreground">Trigger:</span>
+                  <Badge variant="outline" className="text-xs">{flow.trigger}</Badge>
+                  <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                  {flow.actions.map((action, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">{action}</Badge>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Last run: {flow.lastRun}</span>
+                  <span>{flow.runsToday} runs today</span>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      {flow.status === 'active' ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
 

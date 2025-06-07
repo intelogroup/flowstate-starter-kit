@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, Play, Pause, Settings, MoreHorizontal, Workflow, ArrowRight, Clock, TrendingUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,16 +111,37 @@ const MyFlows = () => {
 
   const handleActivationComplete = () => {
     if (activationModal.flowId) {
-      const newStatus = activationModal.action === 'activate' ? 'active' : 'paused';
-      setFlowStatuses(prev => ({
-        ...prev,
-        [activationModal.flowId!]: newStatus
-      }));
+      // Simulate success/failure for placeholder
+      const success = Math.random() > 0.15; // 85% success rate
       
-      toast({
-        title: `Flow ${activationModal.action === 'activate' ? 'Activated' : 'Paused'}`,
-        description: `${activationModal.flowName} has been ${activationModal.action === 'activate' ? 'activated' : 'paused'}.`,
-      });
+      if (success) {
+        const newStatus = activationModal.action === 'activate' ? 'active' : 'paused';
+        setFlowStatuses(prev => ({
+          ...prev,
+          [activationModal.flowId!]: newStatus
+        }));
+        
+        toast({
+          title: `Flow ${activationModal.action === 'activate' ? 'Activated' : 'Paused'}`,
+          description: `${activationModal.flowName} has been ${activationModal.action === 'activate' ? 'activated' : 'paused'} successfully.`,
+        });
+        
+        // Simulate analytics update by triggering a refresh event
+        window.dispatchEvent(new CustomEvent('flowStatusChanged', { 
+          detail: { 
+            flowId: activationModal.flowId, 
+            status: newStatus,
+            action: activationModal.action
+          }
+        }));
+      } else {
+        // Keep current status on failure
+        toast({
+          title: "Activation Failed",
+          description: `Failed to ${activationModal.action} ${activationModal.flowName}. Please try again.`,
+          variant: "destructive"
+        });
+      }
     }
     
     setActivationModal({ isOpen: false, flowId: null, flowName: '', action: 'activate' });
@@ -245,7 +265,7 @@ const MyFlows = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleRunFlow(flow.id, flow.name)}
-                    disabled={loadingFlows.has(flow.id)}
+                    disabled={loadingFlows.has(flow.id) || activationModal.isOpen}
                   >
                     <Play className="w-4 h-4" />
                   </Button>
@@ -253,7 +273,7 @@ const MyFlows = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleToggleFlow(flow.id, flowStatuses[flow.id], flow.name)}
-                    disabled={loadingFlows.has(flow.id)}
+                    disabled={loadingFlows.has(flow.id) || activationModal.isOpen}
                   >
                     {flowStatuses[flow.id] === 'active' ? (
                       <Pause className="w-4 h-4" />
@@ -261,10 +281,10 @@ const MyFlows = () => {
                       <Play className="w-4 h-4" />
                     )}
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={activationModal.isOpen}>
                     <Settings className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={activationModal.isOpen}>
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </div>

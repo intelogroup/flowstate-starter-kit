@@ -9,6 +9,7 @@ import FlowMetricsCard from "./FlowMetricsCard";
 const FlowAnalytics = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [hasRecentUpdate, setHasRecentUpdate] = useState(false);
 
   const performanceData = [
     { date: "2024-01-10", executions: 45, success: 42, failures: 3, avgDuration: 2.1 },
@@ -38,8 +39,27 @@ const FlowAnalytics = () => {
     setTimeout(() => {
       setIsRefreshing(false);
       setLastUpdated(new Date());
+      setHasRecentUpdate(true);
+      // Clear the update indicator after 3 seconds
+      setTimeout(() => setHasRecentUpdate(false), 3000);
     }, 2000);
   };
+
+  // Listen for flow status changes from other components
+  useEffect(() => {
+    const handleFlowStatusChange = (event: CustomEvent) => {
+      console.log('Analytics: Flow status changed', event.detail);
+      setLastUpdated(new Date());
+      setHasRecentUpdate(true);
+      setTimeout(() => setHasRecentUpdate(false), 3000);
+    };
+
+    window.addEventListener('flowStatusChanged', handleFlowStatusChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('flowStatusChanged', handleFlowStatusChange as EventListener);
+    };
+  }, []);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -55,7 +75,14 @@ const FlowAnalytics = () => {
       {/* Header with refresh */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Analytics</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground">Analytics</h2>
+            {hasRecentUpdate && (
+              <Badge variant="outline" className="text-green-600 border-green-200 animate-pulse">
+                Updated
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">
             Last updated: {lastUpdated.toLocaleTimeString()}
           </p>
@@ -131,8 +158,8 @@ const FlowAnalytics = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   Execution Trends
-                  {isRefreshing && (
-                    <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+                  {(isRefreshing || hasRecentUpdate) && (
+                    <RefreshCw className={`w-4 h-4 text-muted-foreground ${isRefreshing ? 'animate-spin' : hasRecentUpdate ? 'text-green-600' : ''}`} />
                   )}
                 </CardTitle>
               </CardHeader>

@@ -74,7 +74,7 @@ const MyAutomations = () => {
       createdAt: "1 week ago",
       trigger: "File Upload"
     }
-  ];
+  ]);
 
   const [loadingAutomations, setLoadingAutomations] = useState<Set<number>>(new Set());
 

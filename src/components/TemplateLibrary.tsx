@@ -1,23 +1,28 @@
 
-import { Search, Filter, Grid, List, Mail, MessageSquare, FileSpreadsheet, Plus, Play, Eye } from "lucide-react";
+import { Search, Filter, Grid, List, Mail, MessageSquare, FileSpreadsheet, Plus, Play, Eye, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import FlowSearchChat from "./FlowSearchChat";
 
 const TemplateLibrary = () => {
   const navigate = useNavigate();
+  const [showAISearch, setShowAISearch] = useState(false);
   
   const templates = [
     {
       id: 1,
       title: "Email to Drive",
-      description: "Save email attachments to Google Drive folders.",
+      description: "Save email attachments to Google Drive folders automatically.",
       category: "Productivity",
       icon: Mail,
       targetIcon: FileSpreadsheet,
       stats: "924 requests • 1.2K users",
-      tags: ["email", "drive", "attachments"]
+      tags: ["email", "drive", "attachments"],
+      useCase: "Perfect for saving invoices, contracts, and important documents"
     },
     {
       id: 2,
@@ -27,7 +32,8 @@ const TemplateLibrary = () => {
       icon: Mail,
       targetIcon: MessageSquare,
       stats: "645 requests • 890 users",
-      tags: ["email", "whatsapp", "notifications"]
+      tags: ["email", "whatsapp", "notifications"],
+      useCase: "Stay notified of urgent emails while away from your computer"
     },
     {
       id: 3,
@@ -37,7 +43,41 @@ const TemplateLibrary = () => {
       icon: Mail,
       targetIcon: FileSpreadsheet,
       stats: "378 requests • 520 users",
-      tags: ["email", "sheets", "data entry"]
+      tags: ["email", "sheets", "data entry"],
+      useCase: "Track customer inquiries, support tickets, or sales leads"
+    },
+    {
+      id: 4,
+      title: "Invoice Processor",
+      description: "Extract and organize invoice attachments by date and vendor.",
+      category: "Finance",
+      icon: Mail,
+      targetIcon: FileSpreadsheet,
+      stats: "156 requests • 230 users",
+      tags: ["invoices", "finance", "automation"],
+      useCase: "Automate accounting workflows and expense tracking"
+    },
+    {
+      id: 5,
+      title: "Social Media Scheduler",
+      description: "Schedule posts across multiple social media platforms.",
+      category: "Marketing",
+      icon: MessageSquare,
+      targetIcon: MessageSquare,
+      stats: "892 requests • 670 users",
+      tags: ["social media", "scheduling", "content"],
+      useCase: "Maintain consistent social media presence"
+    },
+    {
+      id: 6,
+      title: "Lead Capture to CRM",
+      description: "Automatically add new leads from forms to your CRM system.",
+      category: "Sales",
+      icon: Mail,
+      targetIcon: FileSpreadsheet,
+      stats: "445 requests • 320 users",
+      tags: ["crm", "leads", "sales"],
+      useCase: "Never miss a potential customer"
     }
   ];
 
@@ -54,21 +94,49 @@ const TemplateLibrary = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Template Library</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Flow Library</h1>
           <p className="text-muted-foreground">Discover pre-built automations to streamline your workflows.</p>
         </div>
         <Button className="bg-primary hover:bg-primary/90">
           <Plus className="w-4 h-4 mr-2" />
-          Request a Template
+          Request a Flow
         </Button>
       </div>
 
-      {/* Search and Filters */}
+      {/* AI Search Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">AI-Powered Flow Discovery</CardTitle>
+                <p className="text-sm text-muted-foreground">Describe what you want to automate and get personalized recommendations</p>
+              </div>
+            </div>
+            <Button 
+              variant={showAISearch ? "secondary" : "default"}
+              onClick={() => setShowAISearch(!showAISearch)}
+            >
+              {showAISearch ? "Hide" : "Try AI Search"}
+            </Button>
+          </div>
+        </CardHeader>
+        {showAISearch && (
+          <CardContent>
+            <FlowSearchChat onTemplateSelect={handleUseTemplate} />
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Traditional Search and Filters */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input 
-            placeholder="Search templates (e.g., 'email to drive', 'invoices')..." 
+            placeholder="Search flows (e.g., 'email to drive', 'invoices')..." 
             className="pl-10"
           />
         </div>
@@ -110,7 +178,8 @@ const TemplateLibrary = () => {
               </div>
               
               <h3 className="text-xl font-semibold text-foreground mb-2">{template.title}</h3>
-              <p className="text-muted-foreground mb-4">{template.description}</p>
+              <p className="text-muted-foreground mb-3">{template.description}</p>
+              <p className="text-sm text-muted-foreground mb-4 italic">{template.useCase}</p>
               
               <div className="text-sm text-muted-foreground mb-4">{template.stats}</div>
               
@@ -128,7 +197,7 @@ const TemplateLibrary = () => {
                   onClick={() => handleUseTemplate(template.id)}
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Use Template
+                  Use Flow
                 </Button>
                 <Button 
                   variant="outline"

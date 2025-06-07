@@ -1,4 +1,3 @@
-
 import { LayoutDashboard, Library, Cog, BarChart3, Bell, HelpCircle, Zap } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -10,7 +9,7 @@ interface SidebarProps {
 const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "templates", label: "Template Library", icon: Library },
+    { id: "templates", label: "Flow Library", icon: Library },
     { id: "automations", label: "My Automations", icon: Cog },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "notifications", label: "Notifications", icon: Bell },

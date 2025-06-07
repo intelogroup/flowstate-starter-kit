@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import FlowDetails from "./components/FlowDetails";
 import FlowWizard from "./components/FlowWizard";
 import TemplatePreview from "./components/TemplatePreview";
+import FlowsPage from "./pages/FlowsPage";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/flows" element={<FlowsPage />} />
             <Route path="/flow/:id" element={<FlowDetails />} />
             <Route path="/create-flow" element={<FlowWizard />} />
             <Route path="/create-flow/:templateId" element={<FlowWizard />} />

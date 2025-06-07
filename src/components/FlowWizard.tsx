@@ -1,4 +1,3 @@
-
 import { ArrowLeft, ArrowRight, Check, Mail, FileSpreadsheet, Settings, Play, Clock, AlertTriangle, CheckCircle, Loader, RefreshCw, Database, MessageSquare, Calendar, Zap, Globe, Star, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,6 +132,12 @@ const FlowWizard = () => {
         ]
       });
     }, 3000);
+  };
+
+  const handleActivateFlow = () => {
+    const finalFlowName = flowName || template.title;
+    // Redirect to transitional page with flow details
+    navigate(`/flows?name=${encodeURIComponent(finalFlowName)}&id=${Date.now()}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -417,7 +422,7 @@ const FlowWizard = () => {
                       )}
                       Test Flow
                     </Button>
-                    <Button className="flex-1" onClick={() => navigate('/flows')}>
+                    <Button className="flex-1" onClick={handleActivateFlow}>
                       <Check className="w-4 h-4 mr-2" />
                       Activate Flow
                     </Button>

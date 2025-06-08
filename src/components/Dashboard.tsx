@@ -1,4 +1,3 @@
-
 import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Settings, Bell, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +13,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [showAISearch, setShowAISearch] = useState(false);
   const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
-  const [flowStatuses, setFlowStatuses] = useState<Record<number, 'active' | 'paused'>>({
+  const [flowStatuses, setFlowStatuses] = useState<Record<number, 'active' | 'paused' | 'error'>>({
     1: 'active',
     2: 'active', 
-    3: 'paused'
+    3: 'error'
   });
 
   const handleTemplateSelect = (templateId: number) => {
@@ -28,18 +27,35 @@ const Dashboard = () => {
     setLoadingFlows(prev => new Set(prev).add(flowId));
     
     const currentStatus = flowStatuses[flowId];
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
     
-    // Show appropriate toast
-    if (newStatus === 'paused') {
-      showFlowToasts.paused(flowName);
-    } else {
-      showFlowToasts.activated(flowName);
-    }
-    
-    // Simulate API call
+    // Simulate different outcomes for different flows
     setTimeout(() => {
-      setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
+      if (flowId === 1) {
+        // Success scenario for flow 1
+        const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+        setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
+        
+        if (newStatus === 'paused') {
+          showFlowToasts.paused(flowName);
+        } else {
+          showFlowToasts.activated(flowName);
+        }
+      } else if (flowId === 3) {
+        // Failure scenario for flow 3
+        setFlowStatuses(prev => ({ ...prev, [flowId]: 'error' }));
+        showFlowToasts.failed(flowName, "Authentication failed - please reconnect your account");
+      } else {
+        // Normal success for other flows
+        const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+        setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
+        
+        if (newStatus === 'paused') {
+          showFlowToasts.paused(flowName);
+        } else {
+          showFlowToasts.activated(flowName);
+        }
+      }
+      
       setLoadingFlows(prev => {
         const newSet = new Set(prev);
         newSet.delete(flowId);
@@ -236,7 +252,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Active Flows Section with Pause/Resume Placeholders */}
+      {/* Active Flows Section with Success/Failure UI Provisions */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -255,7 +271,9 @@ const Dashboard = () => {
             const status = flowStatuses[flow.id];
             
             return (
-              <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card key={flow.id} className={`hover:shadow-md transition-shadow cursor-pointer ${
+                status === 'error' ? 'border-destructive/50 bg-destructive/5' : ''
+              }`}>
                 <CardContent className="p-4">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8">
@@ -265,15 +283,32 @@ const Dashboard = () => {
                     <>
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Workflow className="w-5 h-5 text-primary" />
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            status === 'active' ? 'bg-green-100 dark:bg-green-900' :
+                            status === 'error' ? 'bg-red-100 dark:bg-red-900' :
+                            'bg-primary/10'
+                          }`}>
+                            <Workflow className={`w-5 h-5 ${
+                              status === 'active' ? 'text-green-600 dark:text-green-400' :
+                              status === 'error' ? 'text-red-600 dark:text-red-400' :
+                              'text-primary'
+                            }`} />
                           </div>
                           <div>
                             <h3 className="font-medium text-foreground">{flow.name}</h3>
                             <p className="text-sm text-muted-foreground">{flow.description}</p>
+                            {status === 'error' && (
+                              <p className="text-xs text-destructive mt-1">
+                                Authentication required - please reconnect
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                        <Badge variant={
+                          status === 'active' ? 'default' :
+                          status === 'error' ? 'destructive' :
+                          'secondary'
+                        } className="text-xs">
                           {status}
                         </Badge>
                       </div>
@@ -291,22 +326,37 @@ const Dashboard = () => {
                         <span>Last run: {flow.lastRun}</span>
                         <span>{flow.runsToday} runs today</span>
                         <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleFlow(flow.id, flow.name);
-                            }}
-                            disabled={isLoading}
-                          >
-                            {status === 'active' ? (
-                              <Pause className="w-3 h-3" />
-                            ) : (
-                              <Play className="w-3 h-3" />
-                            )}
-                          </Button>
+                          {status === 'error' ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs border-destructive text-destructive hover:bg-destructive/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Handle reconnection
+                                showFlowToasts.connecting("Gmail");
+                              }}
+                            >
+                              Reconnect
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleFlow(flow.id, flow.name);
+                              }}
+                              disabled={isLoading}
+                            >
+                              {status === 'active' ? (
+                                <Pause className="w-3 h-3" />
+                              ) : (
+                                <Play className="w-3 h-3" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </>

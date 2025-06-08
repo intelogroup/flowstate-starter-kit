@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle, AlertTriangle, Info, XCircle, Zap, Clock, Users } from "lucide-react";
 
@@ -41,6 +40,14 @@ export const showFlowToasts = {
       title: "Flow Activated",
       description: `"${flowName}" is now active and monitoring for triggers`,
       duration: 4000,
+    });
+  },
+
+  connecting: (serviceName: string) => {
+    toast({
+      title: "Connecting...",
+      description: `Establishing connection to ${serviceName}`,
+      duration: 3000,
     });
   }
 };

@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Library, Cog, BarChart3, Bell, HelpCircle, Zap, Settings } from "lucide-react";
+import { LayoutDashboard, Library, Cog, BarChart3, Bell, HelpCircle, Zap, Settings, FileText, Shield } from "lucide-react";
 
 interface SidebarProps {
   activeSection: string;
@@ -13,6 +13,8 @@ const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
     { id: "automations", label: "My Automations", icon: Cog },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "documentation", label: "Documentation", icon: FileText },
+    { id: "privacy", label: "Privacy Policy", icon: Shield },
     { id: "help", label: "Help & Support", icon: HelpCircle },
   ];
 

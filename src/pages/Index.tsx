@@ -10,6 +10,8 @@ import Analytics from "@/components/Analytics";
 import Notifications from "@/components/Notifications";
 import HelpSupport from "@/components/HelpSupport";
 import Settings from "@/components/Settings";
+import Documentation from "@/components/Documentation";
+import PrivacyPolicy from "@/components/PrivacyPolicy";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -28,6 +30,10 @@ const Index = () => {
         return <Analytics />;
       case "notifications":
         return <Notifications />;
+      case "documentation":
+        return <Documentation />;
+      case "privacy":
+        return <PrivacyPolicy />;
       case "help":
         return <HelpSupport />;
       case "settings":

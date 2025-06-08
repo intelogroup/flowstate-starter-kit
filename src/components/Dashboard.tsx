@@ -1,4 +1,5 @@
-import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Settings, Bell, Filter } from "lucide-react";
+
+import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -147,18 +148,6 @@ const Dashboard = () => {
             <Filter className="w-4 h-4 mr-2" />
             Filters
           </Button>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
-            <Bell className="w-4 h-4 mr-2" />
-            Notifications
-          </Button>
-          <Button variant="outline" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-          <div className="text-foreground font-medium">John Doe</div>
-          <div className="w-8 h-8 bg-primary rounded-full"></div>
         </div>
       </div>
 

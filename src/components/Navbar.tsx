@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "./ThemeToggle";
+import NotificationCenter from "./NotificationCenter";
 import { User, Settings, LogOut, CreditCard, HelpCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,8 +36,23 @@ const Navbar = ({ onSectionChange }: NavbarProps) => {
   };
 
   return (
-    <div className="h-16 bg-background border-b border-border flex items-center justify-end px-6">
+    <div className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
+      <div className="flex items-center">
+        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+      </div>
+      
       <div className="flex items-center gap-4">
+        <NotificationCenter />
+        
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => onSectionChange?.("settings")}
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Settings
+        </Button>
+        
         <ThemeToggle />
         
         <DropdownMenu>

@@ -1,3 +1,4 @@
+
 import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Settings, Bell, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,13 +7,45 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FlowSearchChat from "./FlowSearchChat";
+import { showFlowToasts } from "./TransitionalToasts";
+import { FlowExecutingScreen } from "./TransitionalScreens";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [showAISearch, setShowAISearch] = useState(false);
+  const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
+  const [flowStatuses, setFlowStatuses] = useState<Record<number, 'active' | 'paused'>>({
+    1: 'active',
+    2: 'active', 
+    3: 'paused'
+  });
 
   const handleTemplateSelect = (templateId: number) => {
     navigate(`/create-flow/${templateId}`);
+  };
+
+  const handleToggleFlow = (flowId: number, flowName: string) => {
+    setLoadingFlows(prev => new Set(prev).add(flowId));
+    
+    const currentStatus = flowStatuses[flowId];
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    
+    // Show appropriate toast
+    if (newStatus === 'paused') {
+      showFlowToasts.paused(flowName);
+    } else {
+      showFlowToasts.activated(flowName);
+    }
+    
+    // Simulate API call
+    setTimeout(() => {
+      setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
+      setLoadingFlows(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(flowId);
+        return newSet;
+      });
+    }, 1500);
   };
 
   const featuredTemplates = [
@@ -50,7 +83,6 @@ const Dashboard = () => {
       id: 1,
       name: "Email Invoice Processing",
       description: "Automatically process invoices from email",
-      status: "active",
       trigger: "Gmail",
       actions: ["Google Drive", "Google Sheets"],
       lastRun: "2 min ago",
@@ -60,7 +92,6 @@ const Dashboard = () => {
       id: 2,
       name: "Customer Support Flow",
       description: "Route support emails to Slack",
-      status: "active", 
       trigger: "Gmail",
       actions: ["Slack", "Notion"],
       lastRun: "15 min ago",
@@ -70,7 +101,6 @@ const Dashboard = () => {
       id: 3,
       name: "Lead Qualification",
       description: "Qualify leads from contact forms",
-      status: "paused",
       trigger: "Webhook",
       actions: ["CRM", "Email"],
       lastRun: "2 hours ago",
@@ -206,7 +236,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Active Flows Section */}
+      {/* Active Flows Section with Pause/Resume Placeholders */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -220,94 +250,72 @@ const Dashboard = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {activeFlows.slice(0, 4).map((flow) => (
-            <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Workflow className="w-5 h-5 text-primary" />
+          {activeFlows.slice(0, 4).map((flow) => {
+            const isLoading = loadingFlows.has(flow.id);
+            const status = flowStatuses[flow.id];
+            
+            return (
+              <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <FlowExecutingScreen flowName={flow.name} />
                     </div>
-                    <div>
-                      <h3 className="font-medium text-foreground">{flow.name}</h3>
-                      <p className="text-sm text-muted-foreground">{flow.description}</p>
-                    </div>
-                  </div>
-                  <Badge variant={flow.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                    {flow.status}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-medium text-muted-foreground">Trigger:</span>
-                  <Badge variant="outline" className="text-xs">{flow.trigger}</Badge>
-                  <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                  {flow.actions.map((action, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs">{action}</Badge>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Last run: {flow.lastRun}</span>
-                  <span>{flow.runsToday} runs today</span>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      {flow.status === 'active' ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <Workflow className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-foreground">{flow.name}</h3>
+                            <p className="text-sm text-muted-foreground">{flow.description}</p>
+                          </div>
+                        </div>
+                        <Badge variant={status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                          {status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-medium text-muted-foreground">Trigger:</span>
+                        <Badge variant="outline" className="text-xs">{flow.trigger}</Badge>
+                        <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                        {flow.actions.map((action, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">{action}</Badge>
+                        ))}
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Last run: {flow.lastRun}</span>
+                        <span>{flow.runsToday} runs today</span>
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleFlow(flow.id, flow.name);
+                            }}
+                            disabled={isLoading}
+                          >
+                            {status === 'active' ? (
+                              <Pause className="w-3 h-3" />
+                            ) : (
+                              <Play className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, John</h1>
-          <p className="text-muted-foreground">Here's what's happening with your automations</p>
-        </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Automation
-        </Button>
-      </div>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Automations</CardTitle>
-            <Activity className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-green-600 dark:text-green-400">+2 from last month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Executions This Month</CardTitle>
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,284</div>
-            <p className="text-xs text-muted-foreground">127 / 500 limit</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            <CheckCircle className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">98.5%</div>
-            <p className="text-xs text-green-600 dark:text-green-400">+0.5% from last week</p>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

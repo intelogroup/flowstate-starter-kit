@@ -88,6 +88,10 @@ const TemplateLibrary = () => {
     navigate(`/template/${templateId}`);
   };
 
+  const handleRequestFlow = () => {
+    navigate('/request-flow');
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -96,10 +100,6 @@ const TemplateLibrary = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">Flow Library</h1>
           <p className="text-muted-foreground">Discover pre-built automations to streamline your workflows.</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Request a Flow
-        </Button>
       </div>
 
       {/* AI Search Section */}
@@ -130,8 +130,8 @@ const TemplateLibrary = () => {
         )}
       </Card>
 
-      {/* Traditional Search and Filters */}
-      <div className="flex items-center gap-4">
+      {/* Search, Filters and Actions in one row */}
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input 
@@ -142,6 +142,10 @@ const TemplateLibrary = () => {
         <Button variant="outline">
           <Filter className="w-4 h-4 mr-2" />
           Filters
+        </Button>
+        <Button onClick={handleRequestFlow} className="bg-primary hover:bg-primary/90">
+          <Plus className="w-4 h-4 mr-2" />
+          Request a Flow
         </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,7 @@ import FlowDetails from "./components/FlowDetails";
 import FlowWizard from "./components/FlowWizard";
 import TemplatePreview from "./components/TemplatePreview";
 import FlowsPage from "./pages/FlowsPage";
+import RequestFlowPage from "./pages/RequestFlowPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +28,7 @@ const App = () => (
             <Route path="/create-flow" element={<FlowWizard />} />
             <Route path="/create-flow/:templateId" element={<FlowWizard />} />
             <Route path="/template/:id" element={<TemplatePreview />} />
+            <Route path="/request-flow" element={<RequestFlowPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, Play, Pause, MoreHorizontal, Activity, Settings, Trash2, Copy, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -231,63 +230,6 @@ const MyAutomations = () => {
           <Plus className="w-4 h-4 mr-2" />
           Create Automation
         </Button>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Automations</p>
-                <p className="text-2xl font-bold text-foreground">{automations.length}</p>
-              </div>
-              <Activity className="w-8 h-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {automations.filter(a => a.status === 'active').length}
-                </p>
-              </div>
-              <Play className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Executions</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {automations.reduce((sum, a) => sum + a.executions, 0)}
-                </p>
-              </div>
-              <Activity className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">With Errors</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {automations.filter(a => a.status === 'error').length}
-                </p>
-              </div>
-              <Activity className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Search and Filters */}

@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
 import Dashboard from "@/components/Dashboard";
 import TemplateLibrary from "@/components/TemplateLibrary";
 import MyAutomations from "@/components/MyAutomations";
@@ -36,9 +37,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex w-full">
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-      <main className="flex-1 overflow-auto">
-        {renderContent()}
-      </main>
+      <div className="flex-1 flex flex-col ml-64">
+        <Navbar />
+        <main className="flex-1 overflow-auto">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 };

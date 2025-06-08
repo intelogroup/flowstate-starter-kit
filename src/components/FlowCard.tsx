@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import FlowStatusIndicator from "./FlowStatusIndicator";
 import { Flow } from "@/types/flow";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface FlowCardProps {
   flow: Flow;
@@ -15,6 +16,9 @@ interface FlowCardProps {
   isActivationModalOpen: boolean;
   onRunFlow: (flowId: number, flowName: string) => void;
   onToggleFlow: (flowId: number, currentStatus: string, flowName: string) => void;
+  onSettingsClick?: () => void;
+  isSelected?: boolean;
+  onSelect?: (selected: boolean) => void;
 }
 
 const FlowCard = ({ 
@@ -23,15 +27,44 @@ const FlowCard = ({
   isLoading, 
   isActivationModalOpen,
   onRunFlow, 
-  onToggleFlow 
+  onToggleFlow,
+  onSettingsClick,
+  isSelected = false,
+  onSelect
 }: FlowCardProps) => {
   const navigate = useNavigate();
 
+  const handleCardClick = () => {
+    if (!isSelected && !onSelect) {
+      navigate(`/flow/${flow.id}`);
+    }
+  };
+
+  const handleSelectionChange = (checked: boolean) => {
+    if (onSelect) {
+      onSelect(checked);
+    }
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/flow/${flow.id}`)}>
+    <Card 
+      className={`hover:shadow-md transition-shadow cursor-pointer ${
+        isSelected ? 'ring-2 ring-primary bg-accent/50' : ''
+      }`} 
+      onClick={handleCardClick}
+    >
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-4">
+            {onSelect && (
+              <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={handleSelectionChange}
+                  disabled={isLoading || isActivationModalOpen}
+                />
+              </div>
+            )}
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
               <Workflow className="w-6 h-6 text-primary" />
             </div>
@@ -84,7 +117,12 @@ const FlowCard = ({
                 <Play className="w-4 h-4" />
               )}
             </Button>
-            <Button variant="outline" size="sm" disabled={isActivationModalOpen}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={isActivationModalOpen}
+              onClick={onSettingsClick}
+            >
               <Settings className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="sm" disabled={isActivationModalOpen}>

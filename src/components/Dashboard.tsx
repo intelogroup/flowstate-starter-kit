@@ -1,4 +1,3 @@
-
 import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import FlowSearchChat from "./FlowSearchChat";
 import { showFlowToasts } from "./TransitionalToasts";
 import { FlowExecutingScreen } from "./TransitionalScreens";
+import FlowsEmptyState from "./FlowsEmptyState";
 
 const Dashboard = () => {
   const navigate = useNavigate();

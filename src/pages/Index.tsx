@@ -12,6 +12,7 @@ import HelpSupport from "@/components/HelpSupport";
 import Settings from "@/components/Settings";
 import Documentation from "@/components/Documentation";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
+import { UserProfile } from "@/components/UserProfile";
 import { PageLoading } from "@/components/LoadingStates";
 
 const Index = () => {
@@ -57,6 +58,16 @@ const Index = () => {
         return <HelpSupport />;
       case "settings":
         return <Settings />;
+      case "profile":
+        return (
+          <div className="container mx-auto p-6 max-w-4xl">
+            <UserProfile
+              onLogout={() => console.log('User logged out')}
+              onSettingsClick={() => handleSectionChange('settings')}
+              onPasswordChange={() => console.log('Password change requested')}
+            />
+          </div>
+        );
       default:
         return <Dashboard />;
     }

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { User, Settings, LogOut, CreditCard, HelpCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -22,9 +22,10 @@ interface UserProfileDropdownProps {
     avatarUrl?: string;
     plan: 'free' | 'pro' | 'enterprise';
   };
-  onSettingsClick?: () => void;
   onProfileClick?: () => void;
+  onSettingsClick?: () => void;
   onBillingClick?: () => void;
+  onHelpClick?: () => void;
   onLogout?: () => void;
 }
 
@@ -36,9 +37,10 @@ const UserProfileDropdown = ({
     email: 'john.doe@example.com',
     plan: 'free'
   },
-  onSettingsClick,
   onProfileClick,
+  onSettingsClick,
   onBillingClick,
+  onHelpClick,
   onLogout
 }: UserProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,17 +57,26 @@ const UserProfileDropdown = ({
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
+  const handleMenuItemClick = (action?: () => void) => {
+    setIsOpen(false);
+    action?.();
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <EnhancedButton 
+          variant="ghost" 
+          className="relative h-10 w-10 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label={`User menu for ${user.firstName} ${user.lastName}`}
+        >
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
-            <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+            <AvatarFallback className="text-sm">{getInitials(user.firstName, user.lastName)}</AvatarFallback>
           </Avatar>
-        </Button>
+        </EnhancedButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-64" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-2">
             <div className="flex items-center gap-2">
@@ -85,26 +96,41 @@ const UserProfileDropdown = ({
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onProfileClick}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem 
+          onClick={() => handleMenuItemClick(onProfileClick)}
+          className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
+        >
+          <User className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>My Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onBillingClick}>
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span>Billing</span>
+        <DropdownMenuItem 
+          onClick={() => handleMenuItemClick(onSettingsClick)}
+          className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
+        >
+          <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Account Settings</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onSettingsClick}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem 
+          onClick={() => handleMenuItemClick(onBillingClick)}
+          className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
+        >
+          <CreditCard className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Billing & Plans</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <HelpCircle className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={() => handleMenuItemClick(onHelpClick)}
+          className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
+        >
+          <HelpCircle className="mr-2 h-4 w-4" aria-hidden="true" />
           <span>Help & Support</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+        <DropdownMenuItem 
+          onClick={() => handleMenuItemClick(onLogout)}
+          className="cursor-pointer text-destructive focus:bg-destructive focus:text-destructive-foreground"
+        >
+          <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

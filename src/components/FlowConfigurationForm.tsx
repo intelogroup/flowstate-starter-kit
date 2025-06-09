@@ -1,29 +1,33 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, RotateCcw, Copy, FileText, Clock, Filter, AlertTriangle } from "lucide-react";
+import DynamicInput from "./DynamicInput";
+import { useDynamicDataMapping } from "@/hooks/useDynamicDataMapping";
 
 const FlowConfigurationForm = () => {
+  const { getAvailableData } = useDynamicDataMapping();
+  const currentStepIndex = 2; // Simulating that we're on step 3, so steps 1-2 are available
+  const availableSteps = getAvailableData(currentStepIndex);
+
   const [config, setConfig] = useState({
     flowName: "Email to Drive Automation",
     description: "Automatically save email attachments to Google Drive",
-    folderPath: "/Invoices/2024",
+    folderPath: "/Invoices/{{step_1.output.date_received}}/{{step_1.output.sender_name}}",
     schedule: "realtime",
-    emailFilter: "has:attachment from:invoices@company.com",
+    emailFilter: "has:attachment from:{{step_1.output.sender_email}}",
     fileTypes: ["PDF", "DOCX", "XLSX"],
     maxFileSize: 25,
     retryAttempts: 3,
     notifications: true,
     duplicateHandling: "skip",
     preserveStructure: true,
-    customNaming: false,
-    namingPattern: "{date}_{sender}_{filename}"
+    customNaming: true,
+    namingPattern: "{{step_1.output.date_received}}_{{step_1.output.sender_name}}_{{step_2.output.file_name}}"
   });
 
   const scheduleOptions = [
@@ -88,32 +92,33 @@ const FlowConfigurationForm = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="flowName">Flow Name *</Label>
-                    <Input
-                      id="flowName"
+                    <DynamicInput
                       value={config.flowName}
-                      onChange={(e) => setConfig(prev => ({ ...prev, flowName: e.target.value }))}
+                      onChange={(value) => setConfig(prev => ({ ...prev, flowName: value }))}
                       placeholder="Enter flow name"
+                      availableSteps={availableSteps}
                     />
                   </div>
                   <div>
                     <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
+                    <DynamicInput
                       value={config.description}
-                      onChange={(e) => setConfig(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={(value) => setConfig(prev => ({ ...prev, description: value }))}
                       placeholder="Optional description"
+                      availableSteps={availableSteps}
+                      multiline
                     />
                   </div>
                   <div>
                     <Label htmlFor="folderPath">Destination Folder</Label>
-                    <Input
-                      id="folderPath"
+                    <DynamicInput
                       value={config.folderPath}
-                      onChange={(e) => setConfig(prev => ({ ...prev, folderPath: e.target.value }))}
+                      onChange={(value) => setConfig(prev => ({ ...prev, folderPath: value }))}
                       placeholder="/path/to/folder"
+                      availableSteps={availableSteps}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Use variables: {"{year}"}, {"{month}"}, {"{sender}"}
+                      Use the {...} button to insert dynamic data from previous steps
                     </p>
                   </div>
                 </div>
@@ -136,13 +141,11 @@ const FlowConfigurationForm = () => {
                   </div>
                   <div>
                     <Label htmlFor="maxFileSize">Max File Size (MB)</Label>
-                    <Input
-                      id="maxFileSize"
+                    <DynamicInput
                       type="number"
-                      value={config.maxFileSize}
-                      onChange={(e) => setConfig(prev => ({ ...prev, maxFileSize: parseInt(e.target.value) }))}
-                      min="1"
-                      max="100"
+                      value={config.maxFileSize.toString()}
+                      onChange={(value) => setConfig(prev => ({ ...prev, maxFileSize: parseInt(value) || 0 }))}
+                      availableSteps={availableSteps}
                     />
                   </div>
                 </div>
@@ -178,11 +181,11 @@ const FlowConfigurationForm = () => {
 
                 <div>
                   <Label htmlFor="emailFilter">Email Filter</Label>
-                  <Input
-                    id="emailFilter"
+                  <DynamicInput
                     value={config.emailFilter}
-                    onChange={(e) => setConfig(prev => ({ ...prev, emailFilter: e.target.value }))}
+                    onChange={(value) => setConfig(prev => ({ ...prev, emailFilter: value }))}
                     placeholder="Gmail search syntax"
+                    availableSteps={availableSteps}
                   />
                   <div className="mt-2 p-3 bg-secondary rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
@@ -237,14 +240,14 @@ const FlowConfigurationForm = () => {
                   {config.customNaming && (
                     <div>
                       <Label htmlFor="namingPattern">Naming Pattern</Label>
-                      <Input
-                        id="namingPattern"
+                      <DynamicInput
                         value={config.namingPattern}
-                        onChange={(e) => setConfig(prev => ({ ...prev, namingPattern: e.target.value }))}
+                        onChange={(value) => setConfig(prev => ({ ...prev, namingPattern: value }))}
                         placeholder="e.g., {date}_{sender}_{filename}"
+                        availableSteps={availableSteps}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Variables: {"{date}"}, {"{time}"}, {"{sender}"}, {"{subject}"}, {"{filename}"}
+                        Click the {...} button to insert dynamic data from previous steps
                       </p>
                     </div>
                   )}
@@ -257,13 +260,11 @@ const FlowConfigurationForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="retryAttempts">Retry Attempts</Label>
-                    <Input
-                      id="retryAttempts"
+                    <DynamicInput
                       type="number"
-                      value={config.retryAttempts}
-                      onChange={(e) => setConfig(prev => ({ ...prev, retryAttempts: parseInt(e.target.value) }))}
-                      min="0"
-                      max="10"
+                      value={config.retryAttempts.toString()}
+                      onChange={(value) => setConfig(prev => ({ ...prev, retryAttempts: parseInt(value) || 0 }))}
+                      availableSteps={availableSteps}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Number of retry attempts on failure

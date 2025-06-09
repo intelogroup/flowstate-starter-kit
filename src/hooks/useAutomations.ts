@@ -8,7 +8,7 @@ export interface Automation {
   status: 'active' | 'paused' | 'error';
   trigger: string;
   executions: number;
-  successRate: number;
+  successRate: string; // Changed from number to string to match the MyAutomations component
   lastRun: string;
   createdAt: string;
 }
@@ -29,7 +29,7 @@ export interface UseAutomationsConfig {
   };
 }
 
-// Mock automation data
+// Mock automation data with string success rates
 const mockAutomations: Automation[] = [
   {
     id: 1,
@@ -38,7 +38,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'Daily at 5:00 PM',
     executions: 120,
-    successRate: 95,
+    successRate: '95%',
     lastRun: '2024-05-03 17:00',
     createdAt: '2024-04-15 10:30',
   },
@@ -49,7 +49,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'New customer signup',
     executions: 300,
-    successRate: 99,
+    successRate: '99%',
     lastRun: '2024-05-04 09:30',
     createdAt: '2024-04-10 14:20',
   },
@@ -60,7 +60,7 @@ const mockAutomations: Automation[] = [
     status: 'paused',
     trigger: 'Stock level below 10',
     executions: 50,
-    successRate: 80,
+    successRate: '80%',
     lastRun: '2024-05-02 14:45',
     createdAt: '2024-04-20 09:15',
   },
@@ -71,7 +71,7 @@ const mockAutomations: Automation[] = [
     status: 'error',
     trigger: 'Payment failure',
     executions: 80,
-    successRate: 65,
+    successRate: '65%',
     lastRun: '2024-05-04 11:00',
     createdAt: '2024-04-18 16:45',
   },
@@ -82,7 +82,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'Weekly on Monday at 9:00 AM',
     executions: 60,
-    successRate: 92,
+    successRate: '92%',
     lastRun: '2024-05-06 09:00',
     createdAt: '2024-04-12 11:30',
   },
@@ -93,7 +93,7 @@ const mockAutomations: Automation[] = [
     status: 'paused',
     trigger: 'User inactive for 30 days',
     executions: 40,
-    successRate: 75,
+    successRate: '75%',
     lastRun: '2024-05-01 16:20',
     createdAt: '2024-04-25 13:10',
   },
@@ -104,7 +104,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'Support ticket marked as high priority',
     executions: 200,
-    successRate: 98,
+    successRate: '98%',
     lastRun: '2024-05-05 13:15',
     createdAt: '2024-04-08 08:45',
   },
@@ -115,7 +115,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'New blog post published',
     executions: 150,
-    successRate: 90,
+    successRate: '90%',
     lastRun: '2024-05-03 10:00',
     createdAt: '2024-04-22 15:20',
   },
@@ -126,7 +126,7 @@ const mockAutomations: Automation[] = [
     status: 'error',
     trigger: 'Daily at 6:00 AM',
     executions: 100,
-    successRate: 70,
+    successRate: '70%',
     lastRun: '2024-05-04 06:00',
     createdAt: '2024-04-14 12:00',
   },
@@ -137,7 +137,7 @@ const mockAutomations: Automation[] = [
     status: 'active',
     trigger: 'New user signs up',
     executions: 250,
-    successRate: 96,
+    successRate: '96%',
     lastRun: '2024-05-05 18:40',
     createdAt: '2024-04-16 10:15',
   },

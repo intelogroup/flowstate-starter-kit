@@ -84,11 +84,11 @@ const AsyncButton = ({
   );
 };
 
-// Simulated async operations
-const simulateUpload = () => new Promise(resolve => setTimeout(resolve, 2000));
-const simulateDownload = () => new Promise(resolve => setTimeout(resolve, 1500));
-const simulateDelete = () => new Promise((resolve, reject) => 
-  setTimeout(() => Math.random() > 0.3 ? resolve(undefined) : reject(new Error('Failed')), 1000)
+// Simulated async operations - all return Promise<void>
+const simulateUpload = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 2000));
+const simulateDownload = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 1500));
+const simulateDelete = (): Promise<void> => new Promise((resolve, reject) => 
+  setTimeout(() => Math.random() > 0.3 ? resolve() : reject(new Error('Failed')), 1000)
 );
 
 export const AsyncOperationDemo = () => {

@@ -1,405 +1,44 @@
-import { Search, Plus, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Zap, Mail, MessageSquare, FileSpreadsheet, ArrowRight, Workflow, Play, Pause, Sparkles, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
-import FlowSearchChat from "./FlowSearchChat";
-import { showFlowToasts } from "./TransitionalToasts";
-import { FlowExecutingScreen } from "./TransitionalScreens";
 import FlowsEmptyState from "./FlowsEmptyState";
+import DashboardHeader from "./DashboardHeader";
+import NotificationBanner from "./NotificationBanner";
+import AISearchSection from "./AISearchSection";
+import PopularTemplates from "./PopularTemplates";
+import ActiveFlowsSection from "./ActiveFlowsSection";
+import AttentionRequiredCard from "./AttentionRequiredCard";
+import RecentActivityCard from "./RecentActivityCard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [showAISearch, setShowAISearch] = useState(false);
-  const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
-  const [flowStatuses, setFlowStatuses] = useState<Record<number, 'active' | 'paused' | 'error'>>({
-    1: 'active',
-    2: 'active', 
-    3: 'error'
-  });
 
   const handleTemplateSelect = (templateId: number) => {
     navigate(`/create-flow/${templateId}`);
   };
 
-  const handleToggleFlow = (flowId: number, flowName: string) => {
-    setLoadingFlows(prev => new Set(prev).add(flowId));
-    
-    const currentStatus = flowStatuses[flowId];
-    
-    // Simulate different outcomes for different flows
-    setTimeout(() => {
-      if (flowId === 1) {
-        // Success scenario for flow 1
-        const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-        setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
-        
-        if (newStatus === 'paused') {
-          showFlowToasts.paused(flowName);
-        } else {
-          showFlowToasts.activated(flowName);
-        }
-      } else if (flowId === 3) {
-        // Failure scenario for flow 3
-        setFlowStatuses(prev => ({ ...prev, [flowId]: 'error' }));
-        showFlowToasts.failed(flowName, "Authentication failed - please reconnect your account");
-      } else {
-        // Normal success for other flows
-        const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-        setFlowStatuses(prev => ({ ...prev, [flowId]: newStatus }));
-        
-        if (newStatus === 'paused') {
-          showFlowToasts.paused(flowName);
-        } else {
-          showFlowToasts.activated(flowName);
-        }
-      }
-      
-      setLoadingFlows(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(flowId);
-        return newSet;
-      });
-    }, 1500);
+  const handleCreateFlow = () => {
+    navigate('/create-flow');
   };
 
-  const featuredTemplates = [
-    {
-      id: 1,
-      title: "Email to Drive",
-      description: "Save email attachments automatically",
-      category: "Productivity",
-      icon: Mail,
-      targetIcon: FileSpreadsheet,
-      users: "1.2K users"
-    },
-    {
-      id: 2,
-      title: "Email to WhatsApp",
-      description: "Get WhatsApp notifications for emails",
-      category: "Communication",
-      icon: Mail,
-      targetIcon: MessageSquare,
-      users: "890 users"
-    },
-    {
-      id: 3,
-      title: "Email to Sheets",
-      description: "Log email details to spreadsheets",
-      category: "Data Management",
-      icon: Mail,
-      targetIcon: FileSpreadsheet,
-      users: "520 users"
-    }
-  ];
+  // Check if user has any flows - for now we'll assume they do
+  // In a real app, this would come from an API call
+  const hasFlows = true;
 
-  const activeFlows = [
-    {
-      id: 1,
-      name: "Email Invoice Processing",
-      description: "Automatically process invoices from email",
-      trigger: "Gmail",
-      actions: ["Google Drive", "Google Sheets"],
-      lastRun: "2 min ago",
-      runsToday: 12
-    },
-    {
-      id: 2,
-      name: "Customer Support Flow",
-      description: "Route support emails to Slack",
-      trigger: "Gmail",
-      actions: ["Slack", "Notion"],
-      lastRun: "15 min ago",
-      runsToday: 8
-    },
-    {
-      id: 3,
-      name: "Lead Qualification",
-      description: "Qualify leads from contact forms",
-      trigger: "Webhook",
-      actions: ["CRM", "Email"],
-      lastRun: "2 hours ago",
-      runsToday: 0
-    }
-  ];
-
-  const recentActivity = [
-    { id: 1, automation: "Email to Drive", action: "Execution completed", time: "2 min ago", status: "success" },
-    { id: 2, automation: "Slack Notifications", action: "New email processed", time: "5 min ago", status: "success" },
-    { id: 3, automation: "Contact Form to CRM", action: "Contact added", time: "12 min ago", status: "success" },
-    { id: 4, automation: "Invoice Processing", action: "Failed - Auth required", time: "1 hour ago", status: "error" },
-  ];
+  if (!hasFlows) {
+    return <FlowsEmptyState onCreateFlow={handleCreateFlow} />;
+  }
 
   return (
     <div className="p-6 space-y-6 bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input 
-              placeholder="Search automations..." 
-              className="pl-10 w-80"
-            />
-          </div>
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* Notification Banner */}
-      <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <Zap className="text-white w-4 h-4" />
-              </div>
-              <span className="text-blue-700 dark:text-blue-300">
-                New! You can now request custom templates directly from the dashboard. Check out 'Request Template'!
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" className="text-blue-700 dark:text-blue-300">×</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Search Section */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div>
-                <CardTitle className="text-base">AI Flow Search</CardTitle>
-                <p className="text-xs text-muted-foreground">Describe what you want to automate</p>
-              </div>
-            </div>
-            <Button 
-              variant={showAISearch ? "secondary" : "default"}
-              size="sm"
-              onClick={() => setShowAISearch(!showAISearch)}
-            >
-              {showAISearch ? "Hide" : "AI Search"}
-            </Button>
-          </div>
-        </CardHeader>
-        {showAISearch && (
-          <CardContent className="pt-0">
-            <FlowSearchChat onTemplateSelect={handleTemplateSelect} />
-          </CardContent>
-        )}
-      </Card>
-
-      {/* Featured Templates Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Popular Templates</h2>
-            <p className="text-sm text-muted-foreground">Quick start with these automation templates</p>
-          </div>
-          <Button variant="outline" size="sm">
-            View All Templates
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {featuredTemplates.map((template) => {
-            const SourceIcon = template.icon;
-            const TargetIcon = template.targetIcon;
-            
-            return (
-              <Card key={template.id} className="hover:shadow-md transition-shadow cursor-pointer border border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                      <SourceIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                      <TargetIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {template.category}
-                    </Badge>
-                  </div>
-                  
-                  <h3 className="font-medium text-foreground mb-1">{template.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
-                  <p className="text-xs text-muted-foreground">{template.users}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Active Flows Section with Success/Failure UI Provisions */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Active Flows</h2>
-            <p className="text-sm text-muted-foreground">Your running automation workflows</p>
-          </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Flow
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {activeFlows.slice(0, 4).map((flow) => {
-            const isLoading = loadingFlows.has(flow.id);
-            const status = flowStatuses[flow.id];
-            
-            return (
-              <Card key={flow.id} className={`hover:shadow-md transition-shadow cursor-pointer ${
-                status === 'error' ? 'border-destructive/50 bg-destructive/5' : ''
-              }`}>
-                <CardContent className="p-4">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <FlowExecutingScreen flowName={flow.name} />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            status === 'active' ? 'bg-green-100 dark:bg-green-900' :
-                            status === 'error' ? 'bg-red-100 dark:bg-red-900' :
-                            'bg-primary/10'
-                          }`}>
-                            <Workflow className={`w-5 h-5 ${
-                              status === 'active' ? 'text-green-600 dark:text-green-400' :
-                              status === 'error' ? 'text-red-600 dark:text-red-400' :
-                              'text-primary'
-                            }`} />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-foreground">{flow.name}</h3>
-                            <p className="text-sm text-muted-foreground">{flow.description}</p>
-                            {status === 'error' && (
-                              <p className="text-xs text-destructive mt-1">
-                                Authentication required - please reconnect
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant={
-                          status === 'active' ? 'default' :
-                          status === 'error' ? 'destructive' :
-                          'secondary'
-                        } className="text-xs">
-                          {status}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-xs font-medium text-muted-foreground">Trigger:</span>
-                        <Badge variant="outline" className="text-xs">{flow.trigger}</Badge>
-                        <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                        {flow.actions.map((action, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">{action}</Badge>
-                        ))}
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Last run: {flow.lastRun}</span>
-                        <span>{flow.runsToday} runs today</span>
-                        <div className="flex items-center gap-1">
-                          {status === 'error' ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-6 px-2 text-xs border-destructive text-destructive hover:bg-destructive/10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Handle reconnection
-                                showFlowToasts.connecting("Gmail");
-                              }}
-                            >
-                              Reconnect
-                            </Button>
-                          ) : (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-6 w-6 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggleFlow(flow.id, flow.name);
-                              }}
-                              disabled={isLoading}
-                            >
-                              {status === 'active' ? (
-                                <Pause className="w-3 h-3" />
-                              ) : (
-                                <Play className="w-3 h-3" />
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-
+      <DashboardHeader />
+      <NotificationBanner />
+      <AISearchSection onTemplateSelect={handleTemplateSelect} />
+      <PopularTemplates />
+      <ActiveFlowsSection onCreateFlow={handleCreateFlow} />
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Attention Required */}
-        <Card className="border-destructive/50">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-              <CardTitle className="text-destructive">Attention Required</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="font-medium">Gmail access expired for "Email to Drive - Invoices"</p>
-              <p className="text-sm text-muted-foreground">This automation has been paused</p>
-            </div>
-            <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10">
-              Reconnect Gmail
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest automation executions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${item.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.automation}</p>
-                    <p className="text-xs text-muted-foreground">{item.action}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {item.time}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <AttentionRequiredCard />
+        <RecentActivityCard />
       </div>
     </div>
   );

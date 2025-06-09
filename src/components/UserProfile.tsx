@@ -97,8 +97,7 @@ export const UserProfile = ({
     isSubmitting,
     setValue,
     setFieldTouched,
-    handleSubmit,
-    resetForm
+    handleSubmit
   } = useFormValidation(fieldConfigs, {
     firstName: user.firstName,
     lastName: user.lastName,
@@ -112,7 +111,7 @@ export const UserProfile = ({
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    addAlert(supabaseAlertHelpers.dataSuccess('Profile updated successfully'));
+    addAlert(supabaseAlertHelpers.databaseSuccess('update', 'user profile'));
     setIsEditingProfile(false);
   };
 
@@ -122,12 +121,15 @@ export const UserProfile = ({
       type: 'info',
       title: 'Coming Soon',
       message: 'Avatar upload will be available after Supabase integration',
-      source: 'user-action'
+      source: 'user'
     });
   };
 
   const handleCancelEdit = () => {
-    resetForm();
+    // Reset form values to original user data
+    setValue('firstName', user.firstName);
+    setValue('lastName', user.lastName);
+    setValue('email', user.email);
     setIsEditingProfile(false);
   };
 

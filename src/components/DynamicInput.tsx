@@ -1,72 +1,86 @@
 
-import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import DynamicDataPicker from './DynamicDataPicker';
-import { FlowStep } from '@/hooks/useDynamicDataMapping';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import DynamicDataPicker from "./DynamicDataPicker";
+
+interface DataField {
+  key: string;
+  label: string;
+  type: string;
+  example?: string;
+}
+
+interface DataStep {
+  stepId: string;
+  stepName: string;
+  stepType: string;
+  fields: DataField[];
+}
 
 interface DynamicInputProps {
+  label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  availableSteps: FlowStep[];
-  multiline?: boolean;
+  required?: boolean;
+  availableData?: DataStep[];
+  error?: string;
   className?: string;
-  disabled?: boolean;
-  type?: string;
 }
 
-const DynamicInput = forwardRef<HTMLInputElement | HTMLTextAreaElement, DynamicInputProps>(
-  ({ value, onChange, placeholder, availableSteps, multiline = false, className, disabled, type = "text" }, ref) => {
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+const DynamicInput = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required = false,
+  availableData = [],
+  error,
+  className = ""
+}: DynamicInputProps) => {
+  const [inputValue, setInputValue] = useState(value);
 
-    useImperativeHandle(ref, () => inputRef.current!);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue);
+  };
 
-    const insertDynamicData = (placeholder: string) => {
-      const input = inputRef.current;
-      if (!input) return;
+  const handleDataSelect = (placeholder: string) => {
+    const newValue = inputValue + placeholder;
+    setInputValue(newValue);
+    onChange(newValue);
+  };
 
-      const start = input.selectionStart || 0;
-      const end = input.selectionEnd || 0;
-      
-      const newValue = value.slice(0, start) + placeholder + value.slice(end);
-      onChange(newValue);
-
-      // Set cursor position after the inserted placeholder
-      setTimeout(() => {
-        const newCursorPos = start + placeholder.length;
-        input.setSelectionRange(newCursorPos, newCursorPos);
-        input.focus();
-      }, 0);
-    };
-
-    const InputComponent = multiline ? Textarea : Input;
-
-    return (
-      <div className="relative">
-        <InputComponent
-          ref={inputRef as any}
-          type={multiline ? undefined : type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <Label htmlFor={label} className="text-sm font-medium">
+        {label}
+        {required && <span className="text-destructive ml-1">*</span>}
+      </Label>
+      <div className="relative flex items-center gap-2">
+        <Input
+          id={label}
+          value={inputValue}
+          onChange={handleInputChange}
           placeholder={placeholder}
-          className={cn("pr-10", className)}
-          disabled={disabled}
+          className={error ? "border-destructive" : ""}
         />
-        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+        {availableData.length > 0 && (
           <DynamicDataPicker
-            availableSteps={availableSteps}
-            onSelect={insertDynamicData}
-            variant="braces"
+            availableData={availableData}
+            onSelect={handleDataSelect}
+            variant="outline"
             size="sm"
           />
-        </div>
+        )}
       </div>
-    );
-  }
-);
-
-DynamicInput.displayName = "DynamicInput";
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+    </div>
+  );
+};
 
 export default DynamicInput;

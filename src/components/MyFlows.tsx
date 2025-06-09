@@ -12,10 +12,11 @@ import BulkActionsBar from "./BulkActionsBar";
 import FlowSettingsModal from "./FlowSettingsModal";
 import NotificationCenter from "./NotificationCenter";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
-import { mockFlows } from "@/types/flow";
+import { mockFlows, Flow } from "@/types/flow";
 
 const MyFlows = () => {
   const navigate = useNavigate();
+  const [flows, setFlows] = useState<Flow[]>(mockFlows);
   const [activationModal, setActivationModal] = useState<{
     isOpen: boolean;
     flowId: number | null;
@@ -40,15 +41,16 @@ const MyFlows = () => {
   
   const [selectedFlows, setSelectedFlows] = useState<Set<number>>(new Set());
   const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
-  const [flowStatuses, setFlowStatuses] = useState<Record<number, string>>({
-    1: 'active',
-    2: 'active', 
-    3: 'paused',
-    4: 'error'
-  });
 
   const handleRunFlow = (flowId: number, flowName: string) => {
     setLoadingFlows(prev => new Set(prev).add(flowId));
+    
+    // Update flow status to PENDING
+    setFlows(prev => prev.map(flow => 
+      flow.id === flowId 
+        ? { ...flow, lastRunStatus: 'PENDING' as const }
+        : flow
+    ));
     
     setTimeout(() => {
       setLoadingFlows(prev => {
@@ -57,21 +59,37 @@ const MyFlows = () => {
         return newSet;
       });
       
+      // Simulate different outcomes
+      const success = Math.random() > 0.2;
+      setFlows(prev => prev.map(flow => 
+        flow.id === flowId 
+          ? { 
+              ...flow, 
+              lastRunStatus: success ? 'SUCCESS' as const : 'FAILURE' as const,
+              lastRunTimestamp: new Date().toISOString(),
+              runsToday: flow.runsToday + 1
+            }
+          : flow
+      ));
+      
       toast({
-        title: "Flow Triggered",
-        description: `${flowName} has been manually triggered and is now running.`,
+        title: success ? "Flow Executed Successfully" : "Flow Execution Failed",
+        description: `${flowName} ${success ? 'completed successfully' : 'failed to execute'}.`,
+        variant: success ? "default" : "destructive"
       });
     }, 2000);
   };
 
-  const handleToggleFlow = (flowId: number, currentStatus: string, flowName: string) => {
-    const newAction = currentStatus === 'active' ? 'deactivate' : 'activate';
+  const handleToggleFlow = (flowId: number, newStatus: boolean, flowName: string) => {
+    setFlows(prev => prev.map(flow => 
+      flow.id === flowId 
+        ? { ...flow, isActive: newStatus }
+        : flow
+    ));
     
-    setActivationModal({
-      isOpen: true,
-      flowId,
-      flowName,
-      action: newAction
+    toast({
+      title: `Flow ${newStatus ? 'Activated' : 'Paused'}`,
+      description: `${flowName} has been ${newStatus ? 'activated' : 'paused'}.`,
     });
   };
 
@@ -83,39 +101,15 @@ const MyFlows = () => {
     });
   };
 
-  const handleActivationComplete = () => {
-    if (activationModal.flowId) {
-      const success = Math.random() > 0.15;
-      
-      if (success) {
-        const newStatus = activationModal.action === 'activate' ? 'active' : 'paused';
-        setFlowStatuses(prev => ({
-          ...prev,
-          [activationModal.flowId!]: newStatus
-        }));
-        
-        toast({
-          title: `Flow ${activationModal.action === 'activate' ? 'Activated' : 'Paused'}`,
-          description: `${activationModal.flowName} has been ${activationModal.action === 'activate' ? 'activated' : 'paused'} successfully.`,
-        });
-        
-        window.dispatchEvent(new CustomEvent('flowStatusChanged', { 
-          detail: { 
-            flowId: activationModal.flowId, 
-            status: newStatus,
-            action: activationModal.action
-          }
-        }));
-      } else {
-        toast({
-          title: "Activation Failed",
-          description: `Failed to ${activationModal.action} ${activationModal.flowName}. Please try again.`,
-          variant: "destructive"
-        });
-      }
+  const handleResolveIssue = (flowId: number) => {
+    const flow = flows.find(f => f.id === flowId);
+    if (flow) {
+      toast({
+        title: "Resolve Issue",
+        description: `Opening resolution wizard for ${flow.name}...`,
+      });
+      // In real implementation, this would open a resolution dialog or navigate to a fix page
     }
-    
-    setActivationModal({ isOpen: false, flowId: null, flowName: '', action: 'activate' });
   };
 
   const handleBulkAction = (action: string) => {
@@ -141,7 +135,6 @@ const MyFlows = () => {
           <p className="text-muted-foreground">Manage and monitor your automation workflows</p>
         </div>
         <div className="flex items-center gap-3">
-          <NotificationCenter />
           <Button className="bg-primary hover:bg-primary/90" onClick={() => navigate('/create-flow')}>
             <Plus className="w-4 h-4 mr-2" />
             Create New Flow
@@ -163,16 +156,14 @@ const MyFlows = () => {
 
       {/* Flows List */}
       <div className="space-y-4">
-        {mockFlows.map((flow) => (
+        {flows.map((flow) => (
           <FlowCard
             key={flow.id}
             flow={flow}
-            status={flowStatuses[flow.id]}
-            isLoading={loadingFlows.has(flow.id)}
-            isActivationModalOpen={activationModal.isOpen}
             onRunFlow={handleRunFlow}
             onToggleFlow={handleToggleFlow}
             onSettingsClick={() => handleFlowSettings(flow.id, flow.name)}
+            onResolveIssue={handleResolveIssue}
             isSelected={selectedFlows.has(flow.id)}
             onSelect={(selected) => {
               if (selected) {
@@ -185,6 +176,7 @@ const MyFlows = () => {
                 });
               }
             }}
+            disabled={loadingFlows.has(flow.id)}
           />
         ))}
       </div>
@@ -200,7 +192,7 @@ const MyFlows = () => {
       {/* Modals */}
       <FlowActivationModal
         isOpen={activationModal.isOpen}
-        onClose={handleActivationComplete}
+        onClose={() => setActivationModal({ isOpen: false, flowId: null, flowName: '', action: 'activate' })}
         flowName={activationModal.flowName}
         action={activationModal.action}
       />

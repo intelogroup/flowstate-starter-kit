@@ -10,6 +10,11 @@ export interface Flow {
   totalRuns: number;
   successRate: string;
   createdAt: string;
+  // New smart card properties
+  isActive: boolean;
+  triggerType: string;
+  lastRunStatus: 'SUCCESS' | 'FAILURE' | 'PENDING' | 'AWAITING_USER_INPUT' | 'IDLE';
+  lastRunTimestamp: string;
 }
 
 export const mockFlows: Flow[] = [
@@ -23,7 +28,11 @@ export const mockFlows: Flow[] = [
     runsToday: 12,
     totalRuns: 1247,
     successRate: "98.5%",
-    createdAt: "2 weeks ago"
+    createdAt: "2 weeks ago",
+    isActive: true,
+    triggerType: "email",
+    lastRunStatus: "SUCCESS",
+    lastRunTimestamp: "2024-06-09T10:30:00Z"
   },
   {
     id: 2,
@@ -35,7 +44,11 @@ export const mockFlows: Flow[] = [
     runsToday: 8,
     totalRuns: 892,
     successRate: "99.2%",
-    createdAt: "1 month ago"
+    createdAt: "1 month ago",
+    isActive: true,
+    triggerType: "email",
+    lastRunStatus: "PENDING",
+    lastRunTimestamp: "2024-06-09T10:15:00Z"
   },
   {
     id: 3,
@@ -47,7 +60,11 @@ export const mockFlows: Flow[] = [
     runsToday: 0,
     totalRuns: 456,
     successRate: "96.8%",
-    createdAt: "3 weeks ago"
+    createdAt: "3 weeks ago",
+    isActive: false,
+    triggerType: "webhook",
+    lastRunStatus: "FAILURE",
+    lastRunTimestamp: "2024-06-09T08:00:00Z"
   },
   {
     id: 4,
@@ -59,6 +76,10 @@ export const mockFlows: Flow[] = [
     runsToday: 0,
     totalRuns: 234,
     successRate: "94.1%",
-    createdAt: "1 week ago"
+    createdAt: "1 week ago",
+    isActive: true,
+    triggerType: "api",
+    lastRunStatus: "AWAITING_USER_INPUT",
+    lastRunTimestamp: "2024-06-08T10:00:00Z"
   }
 ];

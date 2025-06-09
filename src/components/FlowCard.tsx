@@ -2,40 +2,38 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Settings, MoreHorizontal, Workflow, ArrowRight } from "lucide-react";
+import { Play, Pause, Settings, MoreHorizontal, Workflow, ArrowRight, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
-import FlowStatusIndicator from "./FlowStatusIndicator";
+import SmartFlowStatusIndicator from "./SmartFlowStatusIndicator";
 import { Flow } from "@/types/flow";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 interface FlowCardProps {
   flow: Flow;
-  status: string;
-  isLoading: boolean;
-  isActivationModalOpen: boolean;
   onRunFlow: (flowId: number, flowName: string) => void;
-  onToggleFlow: (flowId: number, currentStatus: string, flowName: string) => void;
+  onToggleFlow: (flowId: number, currentStatus: boolean, flowName: string) => void;
   onSettingsClick?: () => void;
+  onResolveIssue?: (flowId: number) => void;
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
+  disabled?: boolean;
 }
 
 const FlowCard = ({ 
   flow, 
-  status, 
-  isLoading, 
-  isActivationModalOpen,
   onRunFlow, 
   onToggleFlow,
   onSettingsClick,
+  onResolveIssue,
   isSelected = false,
-  onSelect
+  onSelect,
+  disabled = false
 }: FlowCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    if (!isSelected && !onSelect) {
+    if (!isSelected && !onSelect && !disabled) {
       navigate(`/flow/${flow.id}`);
     }
   };
@@ -46,11 +44,60 @@ const FlowCard = ({
     }
   };
 
+  const getCardClassName = () => {
+    let baseClass = "hover:shadow-md transition-all cursor-pointer";
+    
+    if (isSelected) {
+      baseClass += " ring-2 ring-primary bg-accent/50";
+    }
+    
+    if (!flow.isActive) {
+      baseClass += " opacity-60";
+    }
+    
+    if (flow.lastRunStatus === 'FAILURE') {
+      baseClass += " border-red-200 dark:border-red-800";
+    }
+    
+    if (flow.lastRunStatus === 'AWAITING_USER_INPUT') {
+      baseClass += " border-amber-200 dark:border-amber-800";
+    }
+    
+    return baseClass;
+  };
+
+  const getActionButton = () => {
+    if (flow.lastRunStatus === 'AWAITING_USER_INPUT') {
+      return (
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => onResolveIssue?.(flow.id)}
+          disabled={disabled}
+          className="border-amber-500 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
+        >
+          <AlertTriangle className="w-4 h-4 mr-1" />
+          Resolve Issue
+        </Button>
+      );
+    }
+
+    return (
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => onRunFlow(flow.id, flow.name)}
+        disabled={disabled || flow.lastRunStatus === 'PENDING' || !flow.isActive}
+      >
+        <Play className="w-4 h-4" />
+        {flow.lastRunStatus === 'PENDING' ? 'Running...' : 'Run Now'}
+      </Button>
+    );
+  };
+
   return (
     <Card 
-      className={`hover:shadow-md transition-shadow cursor-pointer ${
-        isSelected ? 'ring-2 ring-primary bg-accent/50' : ''
-      }`} 
+      className={getCardClassName()} 
       onClick={handleCardClick}
     >
       <CardContent className="p-6">
@@ -61,7 +108,7 @@ const FlowCard = ({
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={handleSelectionChange}
-                  disabled={isLoading || isActivationModalOpen}
+                  disabled={disabled}
                 />
               </div>
             )}
@@ -71,25 +118,44 @@ const FlowCard = ({
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-lg font-semibold text-foreground">{flow.name}</h3>
-                <FlowStatusIndicator 
-                  status={status} 
-                  isLoading={isLoading}
-                />
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    checked={flow.isActive}
+                    onCheckedChange={(checked) => onToggleFlow(flow.id, checked, flow.name)}
+                    disabled={disabled}
+                    size="sm"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {flow.isActive ? 'Active' : 'Paused'}
+                  </span>
+                </div>
               </div>
               <p className="text-muted-foreground mb-3">{flow.description}</p>
               
+              {/* Status Indicator */}
+              <SmartFlowStatusIndicator 
+                lastRunStatus={flow.lastRunStatus}
+                lastRunTimestamp={flow.lastRunTimestamp}
+                isActive={flow.isActive}
+              />
+              
               {/* Flow Chain */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mt-3">
                 <Badge variant="outline" className="text-xs font-medium">
                   {flow.trigger}
                 </Badge>
                 <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                <div className="flex items-center gap-1">
-                  {flow.actions.map((action, idx) => (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {flow.actions.slice(0, 3).map((action, idx) => (
                     <Badge key={idx} variant="outline" className="text-xs">
                       {action}
                     </Badge>
                   ))}
+                  {flow.actions.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{flow.actions.length - 3} more
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -97,46 +163,23 @@ const FlowCard = ({
           
           {/* Action Buttons */}
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onRunFlow(flow.id, flow.name)}
-              disabled={isLoading || isActivationModalOpen}
-            >
-              <Play className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onToggleFlow(flow.id, status, flow.name)}
-              disabled={isLoading || isActivationModalOpen}
-            >
-              {status === 'active' ? (
-                <Pause className="w-4 h-4" />
-              ) : (
-                <Play className="w-4 h-4" />
-              )}
-            </Button>
+            {getActionButton()}
             <Button 
               variant="outline" 
               size="sm" 
-              disabled={isActivationModalOpen}
+              disabled={disabled}
               onClick={onSettingsClick}
             >
               <Settings className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="sm" disabled={isActivationModalOpen}>
+            <Button variant="outline" size="sm" disabled={disabled}>
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </div>
         </div>
         
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">Last Run</span>
-            <div className="font-medium text-foreground">{flow.lastRun}</div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">Runs Today</span>
             <div className="font-medium text-foreground">{flow.runsToday}</div>

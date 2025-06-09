@@ -1,376 +1,443 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, RotateCcw, Copy, FileText, Clock, Filter, AlertTriangle } from "lucide-react";
-import DynamicInput from "./DynamicInput";
-import { useDynamicDataMapping } from "@/hooks/useDynamicDataMapping";
-import { toast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Trash2, Plus, Settings, Mail, Database, FileText, Globe, MessageSquare, Calendar } from "lucide-react";
+import DynamicInput from './DynamicInput';
 
-const FlowConfigurationForm = () => {
-  const { getAvailableData } = useDynamicDataMapping();
-  const currentStepIndex = 2; // Simulating that we're on step 3, so steps 1-2 are available
-  const availableSteps = getAvailableData(currentStepIndex);
+interface FlowStep {
+  id: string;
+  name: string;
+  type: string;
+}
 
-  const [config, setConfig] = useState({
-    flowName: "Email to Drive Automation",
-    description: "Automatically save email attachments to Google Drive",
-    folderPath: "/Invoices/{{step_1.output.date_received}}/{{step_1.output.sender_name}}",
-    schedule: "realtime",
-    emailFilter: "has:attachment from:{{step_1.output.sender_email}}",
-    fileTypes: ["PDF", "DOCX", "XLSX"],
-    maxFileSize: 25,
-    retryAttempts: 3,
-    notifications: true,
-    duplicateHandling: "skip",
-    preserveStructure: true,
-    customNaming: true,
-    namingPattern: "{{step_1.output.date_received}}_{{step_1.output.sender_name}}_{{step_2.output.file_name}}"
-  });
+interface Flow {
+  id: string;
+  name: string;
+  description: string;
+  steps: FlowStep[];
+}
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+interface FlowConfigurationFormProps {
+  flow: Flow;
+  onSave: (flow: Flow, stepConfigurations: Record<string, any>) => void;
+  onCancel: () => void;
+}
 
-  const validateField = (field: string, value: string) => {
-    let error = "";
-    
-    switch (field) {
-      case "flowName":
-        if (!value.trim()) {
-          error = "A flow name is required.";
-        }
-        break;
-      case "maxFileSize":
-        const size = parseInt(value);
-        if (isNaN(size) || size <= 0) {
-          error = "File size must be a positive number.";
-        } else if (size > 100) {
-          error = "File size cannot exceed 100 MB.";
-        }
-        break;
-      case "retryAttempts":
-        const attempts = parseInt(value);
-        if (isNaN(attempts) || attempts < 0) {
-          error = "Retry attempts must be a non-negative number.";
-        } else if (attempts > 10) {
-          error = "Maximum 10 retry attempts allowed.";
-        }
-        break;
-    }
+const stepTypes = [
+  { type: 'gmail', label: 'Gmail', icon: Mail },
+  { type: 'google-drive', label: 'Google Drive', icon: Database },
+  { type: 'webhook', label: 'Webhook', icon: Globe },
+  { type: 'delay', label: 'Delay', icon: Calendar },
+];
 
-    setErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
-  };
+const getStepOutputFields = (stepType: string) => {
+  switch (stepType) {
+    case 'gmail':
+      return [
+        { key: 'subject', label: 'Subject', type: 'string', example: 'Invoice from Acme Corp' },
+        { key: 'body', label: 'Body', type: 'string', example: 'Dear Customer...' },
+        { key: 'sender', label: 'Sender', type: 'string', example: 'invoices@acme.com' },
+        { key: 'date', label: 'Date', type: 'date', example: '2024-04-23' },
+        { key: 'attachmentCount', label: 'Attachment Count', type: 'number', example: '2' },
+      ];
+    case 'google-drive':
+      return [
+        { key: 'fileId', label: 'File ID', type: 'string', example: '123abc456def' },
+        { key: 'fileName', label: 'File Name', type: 'string', example: 'Invoice.pdf' },
+        { key: 'fileSize', label: 'File Size', type: 'number', example: '2.5MB' },
+        { key: 'createdAt', label: 'Created At', type: 'date', example: '2024-04-23' },
+      ];
+    case 'webhook':
+      return [
+        { key: 'responseCode', label: 'Response Code', type: 'number', example: '200' },
+        { key: 'responseBody', label: 'Response Body', type: 'json', example: '{ "status": "success" }' },
+        { key: 'responseTime', label: 'Response Time', type: 'number', example: '120ms' },
+      ];
+    case 'delay':
+      return [
+        { key: 'startTime', label: 'Start Time', type: 'date', example: '2024-04-23 10:00' },
+        { key: 'endTime', label: 'End Time', type: 'date', example: '2024-04-23 10:05' },
+      ];
+    default:
+      return [];
+  }
+};
 
-  const handleInputChange = (field: string, value: string) => {
-    setConfig(prev => ({ ...prev, [field]: value }));
-    validateField(field, value);
-  };
+const FlowConfigurationForm = ({ flow, onSave, onCancel }: FlowConfigurationFormProps) => {
+  const [flowName, setFlowName] = useState(flow.name);
+  const [flowDescription, setFlowDescription] = useState(flow.description);
+  const [steps, setSteps] = useState(flow.steps);
+  const [stepConfigurations, setStepConfigurations] = useState<Record<string, any>>({});
+  const [advancedSettings, setAdvancedSettings] = useState<Record<string, boolean>>({});
 
-  const handleSave = () => {
-    toast({
-      title: "Flow Saved Successfully",
-      description: "Your flow configuration has been saved.",
+  useEffect(() => {
+    const initialConfig: Record<string, any> = {};
+    flow.steps.forEach(step => {
+      initialConfig[step.id] = {};
     });
+    setStepConfigurations(initialConfig);
+  }, [flow]);
+
+  const addStep = (type: string) => {
+    const newStep: FlowStep = {
+      id: Math.random().toString(36).substring(7),
+      name: `${type.charAt(0).toUpperCase() + type.slice(1)} Step`,
+      type: type,
+    };
+
+    setSteps([...steps, newStep]);
+    setStepConfigurations(prev => ({
+      ...prev,
+      [newStep.id]: {}
+    }));
+    setAdvancedSettings(prev => ({
+      ...prev,
+      [newStep.id]: false
+    }));
   };
 
-  const scheduleOptions = [
-    { value: "realtime", label: "Real-time (as emails arrive)", description: "Immediate processing" },
-    { value: "15min", label: "Every 15 minutes", description: "Batch processing" },
-    { value: "hourly", label: "Hourly", description: "Once per hour" },
-    { value: "daily", label: "Daily at 9 AM", description: "Once per day" },
-    { value: "custom", label: "Custom schedule", description: "Define your own schedule" }
-  ];
+  const removeStep = (index: number) => {
+    const newSteps = [...steps];
+    newSteps.splice(index, 1);
+    setSteps(newSteps);
 
-  const fileTypeOptions = ["PDF", "DOCX", "XLSX", "PNG", "JPG", "GIF", "TXT", "CSV"];
-  
-  const duplicateOptions = [
-    { value: "skip", label: "Skip duplicates", description: "Don't process files that already exist" },
-    { value: "overwrite", label: "Overwrite", description: "Replace existing files" },
-    { value: "rename", label: "Rename with suffix", description: "Add number suffix to filename" },
-    { value: "version", label: "Create versions", description: "Keep both files with version numbers" }
-  ];
+    const newConfigs = { ...stepConfigurations };
+    delete newConfigs[steps[index].id];
+    setStepConfigurations(newConfigs);
 
-  const handleFileTypeToggle = (fileType: string) => {
-    setConfig(prev => ({
+    const newAdvancedSettings = { ...advancedSettings };
+    delete newAdvancedSettings[steps[index].id];
+    setAdvancedSettings(newAdvancedSettings);
+  };
+
+  const updateStepConfig = (stepId: string, key: string, value: any) => {
+    setStepConfigurations(prev => ({
       ...prev,
-      fileTypes: prev.fileTypes.includes(fileType)
-        ? prev.fileTypes.filter(t => t !== fileType)
-        : [...prev.fileTypes, fileType]
+      [stepId]: {
+        ...prev[stepId],
+        [key]: value
+      }
     }));
+  };
+
+  const getStepIcon = (stepType: string) => {
+    switch (stepType) {
+      case 'gmail':
+        return <Mail className="w-5 h-5" />;
+      case 'google-drive':
+        return <Database className="w-5 h-5" />;
+      case 'webhook':
+        return <Globe className="w-5 h-5" />;
+      case 'delay':
+        return <Calendar className="w-5 h-5" />;
+      default:
+        return <FileText className="w-5 h-5" />;
+    }
+  };
+
+  const renderStepConfiguration = (step: FlowStep, stepIndex: number) => {
+    const stepConfig = stepConfigurations[step.id] || {};
+    const previousSteps = flow.steps.slice(0, stepIndex);
+    const availableData = previousSteps.map(prevStep => ({
+      stepId: prevStep.id,
+      stepName: prevStep.name,
+      stepType: prevStep.type,
+      fields: getStepOutputFields(prevStep.type)
+    }));
+
+    return (
+      <Card key={step.id} className="mb-4">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {getStepIcon(step.type)}
+              <div>
+                <CardTitle className="text-lg">{step.name}</CardTitle>
+                <Badge variant="secondary" className="mt-1">
+                  {step.type}
+                </Badge>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => removeStep(stepIndex)}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {step.type === 'gmail' && (
+            <>
+              <DynamicInput
+                label="Search Query"
+                value={stepConfig.query || ''}
+                onChange={(value) => updateStepConfig(step.id, 'query', value)}
+                placeholder="has:attachment from:invoices@company.com"
+                availableData={availableData}
+                className="w-full"
+              />
+              <DynamicInput
+                label="Email Processing Instructions"
+                value={stepConfig.instructions || ''}
+                onChange={(value) => updateStepConfig(step.id, 'instructions', value)}
+                placeholder="Extract invoice data and save attachments..."
+                availableData={availableData}
+              />
+              <DynamicInput
+                label="Folder/Label"
+                value={stepConfig.folder || ''}
+                onChange={(value) => updateStepConfig(step.id, 'folder', value)}
+                placeholder="Processed Invoices"
+                availableData={availableData}
+              />
+            </>
+          )}
+
+          {step.type === 'google-drive' && (
+            <>
+              <DynamicInput
+                label="Folder Path"
+                value={stepConfig.folderPath || ''}
+                onChange={(value) => updateStepConfig(step.id, 'folderPath', value)}
+                availableData={availableData}
+                className="w-full"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">File Naming</label>
+                  <select
+                    value={stepConfig.namingStrategy || 'original'}
+                    onChange={(e) => updateStepConfig(step.id, 'namingStrategy', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="original">Keep Original Name</option>
+                    <option value="timestamp">Add Timestamp</option>
+                    <option value="custom">Custom Pattern</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">File Organization</label>
+                  <select
+                    value={stepConfig.organization || 'single'}
+                    onChange={(e) => updateStepConfig(step.id, 'organization', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="single">Single Folder</option>
+                    <option value="date">Organize by Date</option>
+                    <option value="sender">Organize by Sender</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {step.type === 'webhook' && (
+            <>
+              <DynamicInput
+                label="Webhook URL"
+                value={stepConfig.url || ''}
+                onChange={(value) => updateStepConfig(step.id, 'url', value)}
+                placeholder="https://hooks.zapier.com/hooks/catch/..."
+                availableData={availableData}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">HTTP Method</label>
+                  <select
+                    value={stepConfig.method || 'POST'}
+                    onChange={(e) => updateStepConfig(step.id, 'method', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Content Type</label>
+                  <select
+                    value={stepConfig.contentType || 'application/json'}
+                    onChange={(e) => updateStepConfig(step.id, 'contentType', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="application/json">JSON</option>
+                    <option value="application/x-www-form-urlencoded">Form Data</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {step.type === 'delay' && (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicInput
+                label="Duration"
+                value={stepConfig.duration || ''}
+                onChange={(value) => updateStepConfig(step.id, 'duration', value)}
+                placeholder="5"
+                availableData={availableData}
+              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Unit</label>
+                <select
+                  value={stepConfig.unit || 'minutes'}
+                  onChange={(e) => updateStepConfig(step.id, 'unit', e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="seconds">Seconds</option>
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-3 border-t">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAdvancedSettings(prev => ({
+                ...prev,
+                [step.id]: !prev[step.id]
+              }))}
+              className="mb-3"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              {advancedSettings[step.id] ? 'Hide' : 'Show'} Advanced Settings
+            </Button>
+
+            {advancedSettings[step.id] && (
+              <div className="space-y-3 p-3 bg-accent/50 rounded-lg">
+                <DynamicInput
+                  label="Error Handling"
+                  value={stepConfig.errorHandling || ''}
+                  onChange={(value) => updateStepConfig(step.id, 'errorHandling', value)}
+                  placeholder="Continue on error, retry 3 times"
+                  availableData={availableData}
+                />
+                <DynamicInput
+                  label="Custom Headers (JSON)"
+                  value={stepConfig.headers || ''}
+                  onChange={(value) => updateStepConfig(step.id, 'headers', value)}
+                  availableData={availableData}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Flow Configuration</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Copy className="w-4 h-4 mr-2" />
-                Duplicate
-              </Button>
-              <Button variant="outline" size="sm">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                <Save className="w-4 h-4 mr-2" />
-                Save
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">Configure Flow</h2>
+          <Badge variant="secondary">{steps.length} steps</Badge>
+        </div>
+        <p className="text-muted-foreground">
+          Configure the details and steps for your automation flow.
+        </p>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Flow Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <label htmlFor="flowName" className="text-sm font-medium">
+                  Flow Name
+                </label>
+                <input
+                  type="text"
+                  id="flowName"
+                  value={flowName}
+                  onChange={(e) => setFlowName(e.target.value)}
+                  placeholder="My Automation Flow"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="flowDescription" className="text-sm font-medium">
+                  Description
+                </label>
+                <textarea
+                  id="flowDescription"
+                  value={flowDescription}
+                  onChange={(e) => setFlowDescription(e.target.value)}
+                  placeholder="A brief description of what this flow does."
+                  className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Steps</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => setAdvancedSettings({})} >
+                <Settings className="w-4 h-4 mr-2" />
+                Reset Step Settings
               </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="basic" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic">Basic</TabsTrigger>
-              <TabsTrigger value="triggers">Triggers</TabsTrigger>
-              <TabsTrigger value="processing">Processing</TabsTrigger>
-              <TabsTrigger value="advanced">Advanced</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="basic" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="flowName">Flow Name *</Label>
-                    <DynamicInput
-                      value={config.flowName}
-                      onChange={(value) => handleInputChange('flowName', value)}
-                      placeholder="Enter flow name"
-                      availableSteps={availableSteps}
-                      className={errors.flowName ? "border-destructive" : ""}
-                    />
-                    {errors.flowName && (
-                      <p className="text-sm text-destructive mt-1">{errors.flowName}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <DynamicInput
-                      value={config.description}
-                      onChange={(value) => setConfig(prev => ({ ...prev, description: value }))}
-                      placeholder="Optional description"
-                      availableSteps={availableSteps}
-                      multiline
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="folderPath">Destination Folder</Label>
-                    <DynamicInput
-                      value={config.folderPath}
-                      onChange={(value) => setConfig(prev => ({ ...prev, folderPath: value }))}
-                      placeholder="/path/to/folder"
-                      availableSteps={availableSteps}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Use the {"{..."} button to insert dynamic data from previous steps
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label>File Types</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {fileTypeOptions.map(type => (
-                        <Badge
-                          key={type}
-                          variant={config.fileTypes.includes(type) ? "default" : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => handleFileTypeToggle(type)}
-                        >
-                          {type}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="maxFileSize">Max File Size (MB)</Label>
-                    <DynamicInput
-                      type="number"
-                      value={config.maxFileSize.toString()}
-                      onChange={(value) => handleInputChange('maxFileSize', value)}
-                      availableSteps={availableSteps}
-                      className={errors.maxFileSize ? "border-destructive" : ""}
-                    />
-                    {errors.maxFileSize && (
-                      <p className="text-sm text-destructive mt-1">{errors.maxFileSize}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="triggers" className="space-y-6">
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ScrollArea className="h-[400px]">
               <div className="space-y-4">
-                <div>
-                  <Label>Trigger Schedule</Label>
-                  <div className="grid gap-3 mt-2">
-                    {scheduleOptions.map(option => (
-                      <div
-                        key={option.value}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                          config.schedule === option.value 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        onClick={() => setConfig(prev => ({ ...prev, schedule: option.value }))}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">{option.label}</div>
-                            <div className="text-sm text-muted-foreground">{option.description}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="emailFilter">Email Filter</Label>
-                  <DynamicInput
-                    value={config.emailFilter}
-                    onChange={(value) => setConfig(prev => ({ ...prev, emailFilter: value }))}
-                    placeholder="Gmail search syntax"
-                    availableSteps={availableSteps}
-                  />
-                  <div className="mt-2 p-3 bg-secondary rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Filter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Filter Examples:</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div>• <code>has:attachment</code> - Emails with attachments</div>
-                      <div>• <code>from:specific@email.com</code> - From specific sender</div>
-                      <div>• <code>subject:invoice</code> - Subject contains "invoice"</div>
-                      <div>• <code>filename:pdf</code> - Attachments with PDF files</div>
-                    </div>
-                  </div>
-                </div>
+                {steps.map((step, index) => (
+                  renderStepConfiguration(step, index)
+                ))}
               </div>
-            </TabsContent>
+            </ScrollArea>
 
-            <TabsContent value="processing" className="space-y-6">
-              <div className="space-y-6">
-                <div>
-                  <Label>Duplicate File Handling</Label>
-                  <div className="grid gap-3 mt-2">
-                    {duplicateOptions.map(option => (
-                      <div
-                        key={option.value}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                          config.duplicateHandling === option.value 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        onClick={() => setConfig(prev => ({ ...prev, duplicateHandling: option.value }))}
-                      >
-                        <div className="font-medium">{option.label}</div>
-                        <div className="text-sm text-muted-foreground">{option.description}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <Separator />
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Custom File Naming</Label>
-                      <p className="text-sm text-muted-foreground">Apply custom naming pattern to files</p>
-                    </div>
-                    <Switch
-                      checked={config.customNaming}
-                      onCheckedChange={(checked) => setConfig(prev => ({ ...prev, customNaming: checked }))}
-                    />
-                  </div>
-                  
-                  {config.customNaming && (
-                    <div>
-                      <Label htmlFor="namingPattern">Naming Pattern</Label>
-                      <DynamicInput
-                        value={config.namingPattern}
-                        onChange={(value) => setConfig(prev => ({ ...prev, namingPattern: value }))}
-                        placeholder="e.g., {date}_{sender}_{filename}"
-                        availableSteps={availableSteps}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Click the {"{..."} button to insert dynamic data from previous steps
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {stepTypes.map((stepType) => (
+                <Button
+                  key={stepType.type}
+                  variant="secondary"
+                  onClick={() => addStep(stepType.type)}
+                  className="gap-2"
+                >
+                  <stepType.icon className="w-4 h-4" />
+                  Add {stepType.label}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <TabsContent value="advanced" className="space-y-6">
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="retryAttempts">Retry Attempts</Label>
-                    <DynamicInput
-                      type="number"
-                      value={config.retryAttempts.toString()}
-                      onChange={(value) => handleInputChange('retryAttempts', value)}
-                      availableSteps={availableSteps}
-                      className={errors.retryAttempts ? "border-destructive" : ""}
-                    />
-                    {errors.retryAttempts && (
-                      <p className="text-sm text-destructive mt-1">{errors.retryAttempts}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Number of retry attempts on failure
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Send notifications on flow events</p>
-                    </div>
-                    <Switch
-                      checked={config.notifications}
-                      onCheckedChange={(checked) => setConfig(prev => ({ ...prev, notifications: checked }))}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Preserve Folder Structure</Label>
-                      <p className="text-sm text-muted-foreground">Maintain original folder hierarchy</p>
-                    </div>
-                    <Switch
-                      checked={config.preserveStructure}
-                      onCheckedChange={(checked) => setConfig(prev => ({ ...prev, preserveStructure: checked }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                    <span className="font-medium text-yellow-800 dark:text-yellow-200">Advanced Settings</span>
-                  </div>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    These settings affect flow performance and behavior. Changes may require reauthorization of connected services.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={() => onSave({
+          id: flow.id,
+          name: flowName,
+          description: flowDescription,
+          steps: steps,
+        }, stepConfigurations)}>
+          Save Flow
+        </Button>
+      </div>
     </div>
   );
 };

@@ -1,231 +1,204 @@
 
 import { useState } from "react";
-import { Plus, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { showFlowToasts, showSystemToasts } from "@/components/TransitionalToasts";
-import FlowActivationModal from "./FlowActivationModal";
-import QuickStats from "./QuickStats";
-import FlowFilters from "./FlowFilters";
-import FlowCard from "./FlowCard";
-import BulkActionsBar from "./BulkActionsBar";
-import FlowSettingsModal from "./FlowSettingsModal";
-import NotificationCenter from "./NotificationCenter";
-import SearchWithAutocomplete from "./SearchWithAutocomplete";
-import { mockFlows, Flow } from "@/types/flow";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { 
+  Play, 
+  Pause, 
+  Settings, 
+  Search, 
+  Filter,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Copy
+} from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const MyFlows = () => {
   const navigate = useNavigate();
-  const [flows, setFlows] = useState<Flow[]>(mockFlows);
-  const [activationModal, setActivationModal] = useState<{
-    isOpen: boolean;
-    flowId: number | null;
-    flowName: string;
-    action: 'activate' | 'deactivate';
-  }>({
-    isOpen: false,
-    flowId: null,
-    flowName: '',
-    action: 'activate'
-  });
-  
-  const [settingsModal, setSettingsModal] = useState<{
-    isOpen: boolean;
-    flowId: number | null;
-    flowName: string;
-  }>({
-    isOpen: false,
-    flowId: null,
-    flowName: ''
-  });
-  
-  const [selectedFlows, setSelectedFlows] = useState<Set<number>>(new Set());
-  const [loadingFlows, setLoadingFlows] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const handleRunFlow = (flowId: number, flowName: string) => {
-    setLoadingFlows(prev => new Set(prev).add(flowId));
-    
-    // Update flow status to PENDING
-    setFlows(prev => prev.map(flow => 
-      flow.id === flowId 
-        ? { ...flow, lastRunStatus: 'PENDING' as const }
-        : flow
-    ));
-    
-    showFlowToasts.executing(flowName);
-    
-    setTimeout(() => {
-      setLoadingFlows(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(flowId);
-        return newSet;
-      });
-      
-      // Simulate different outcomes
-      const success = Math.random() > 0.2;
-      setFlows(prev => prev.map(flow => 
-        flow.id === flowId 
-          ? { 
-              ...flow, 
-              lastRunStatus: success ? 'SUCCESS' as const : 'FAILURE' as const,
-              lastRunTimestamp: new Date().toISOString(),
-              runsToday: flow.runsToday + 1
-            }
-          : flow
-      ));
-      
-      if (success) {
-        showFlowToasts.completed(flowName, "2.3s");
-      } else {
-        showFlowToasts.failed(flowName, "Connection timeout");
-      }
-    }, 2000);
-  };
-
-  const handleToggleFlow = (flowId: number, newStatus: boolean, flowName: string) => {
-    setFlows(prev => prev.map(flow => 
-      flow.id === flowId 
-        ? { ...flow, isActive: newStatus }
-        : flow
-    ));
-    
-    if (newStatus) {
-      showFlowToasts.activated(flowName);
-    } else {
-      showFlowToasts.paused(flowName);
+  const flows = [
+    {
+      id: 1,
+      name: "Email to Drive Backup",
+      description: "Automatically save email attachments to Google Drive",
+      status: "active",
+      lastRun: "2 hours ago",
+      totalRuns: 45,
+      successRate: 98
+    },
+    {
+      id: 2,
+      name: "Slack Notifications",
+      description: "Send important updates to team Slack channel",
+      status: "paused",
+      lastRun: "1 day ago",
+      totalRuns: 23,
+      successRate: 100
+    },
+    {
+      id: 3,
+      name: "Data Sync Process",
+      description: "Synchronize data between different platforms",
+      status: "error",
+      lastRun: "3 hours ago",
+      totalRuns: 12,
+      successRate: 85
     }
-  };
+  ];
 
-  const handleFlowSettings = (flowId: number, flowName: string) => {
-    setSettingsModal({
-      isOpen: true,
-      flowId,
-      flowName
-    });
-  };
-
-  const handleViewFlowDetails = (flowId: number) => {
+  const handleFlowClick = (flowId: number) => {
     navigate(`/flow/${flowId}`);
   };
 
-  const handleResolveIssue = (flowId: number) => {
-    const flow = flows.find(f => f.id === flowId);
-    if (flow) {
-      showSystemToasts.saving();
-      setTimeout(() => {
-        showSystemToasts.saved();
-      }, 1500);
-      // In real implementation, this would open a resolution dialog or navigate to a fix page
+  const handleEditFlow = (flowId: number, flowName: string) => {
+    console.log(`Editing flow ${flowId}: ${flowName}`);
+    // Navigate to edit page or open edit modal
+  };
+
+  const handleDeleteFlow = (flowId: number, flowName: string) => {
+    console.log(`Deleting flow ${flowId}: ${flowName}`);
+    // Show confirmation modal
+  };
+
+  const handleDuplicateFlow = (flowId: number, flowName: string) => {
+    console.log(`Duplicating flow ${flowId}: ${flowName}`);
+    // Create duplicate
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500';
+      case 'paused': return 'bg-yellow-500';
+      case 'error': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const handleBulkAction = (action: string) => {
-    console.log(`Bulk ${action} for flows:`, Array.from(selectedFlows));
-    showSystemToasts.saved();
-    setSelectedFlows(new Set());
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active': return 'default';
+      case 'paused': return 'secondary';
+      case 'error': return 'destructive';
+      default: return 'secondary';
+    }
   };
 
-  const handleSearch = (query: string) => {
-    console.log("Searching for:", query);
-    // Implement search logic here
-  };
+  const filteredFlows = flows.filter(flow => {
+    const matchesSearch = flow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         flow.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || flow.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-6 space-y-6 bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Flows</h1>
-          <p className="text-muted-foreground">Manage and monitor your automation workflows</p>
+          <h1 className="text-3xl font-bold text-foreground">My Flows</h1>
+          <p className="text-muted-foreground">Manage and monitor your automation flows</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button className="bg-primary hover:bg-primary/90" onClick={() => navigate('/create-flow')}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Flow
-          </Button>
+        <Button onClick={() => navigate('/create-flow')}>
+          Create New Flow
+        </Button>
+      </div>
+
+      <div className="flex gap-4 items-center">
+        <div className="flex-1 relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search flows..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          {["all", "active", "paused", "error"].map(status => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(status)}
+            >
+              <Filter className="w-4 h-4 mr-1" />
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <QuickStats />
-
-      {/* Enhanced Search */}
-      <SearchWithAutocomplete 
-        onSearch={handleSearch}
-        className="max-w-md"
-      />
-
-      {/* Search and Filters */}
-      <FlowFilters />
-
-      {/* Flows List */}
-      <div className="space-y-4">
-        {flows.map((flow) => (
-          <div 
-            key={flow.id} 
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleViewFlowDetails(flow.id)}
-          >
-            <FlowCard
-              flow={flow}
-              onRunFlow={(flowId, flowName) => {
-                // Prevent propagation to avoid double navigation
-                event?.stopPropagation();
-                handleRunFlow(flowId, flowName);
-              }}
-              onToggleFlow={(flowId, newStatus, flowName) => {
-                event?.stopPropagation();
-                handleToggleFlow(flowId, newStatus, flowName);
-              }}
-              onSettingsClick={(flowId, flowName) => {
-                event?.stopPropagation();
-                handleFlowSettings(flowId, flowName);
-              }}
-              onResolveIssue={(flowId) => {
-                event?.stopPropagation();
-                handleResolveIssue(flowId);
-              }}
-              isSelected={selectedFlows.has(flow.id)}
-              onSelect={(selected) => {
-                event?.stopPropagation();
-                if (selected) {
-                  setSelectedFlows(prev => new Set(prev).add(flow.id));
-                } else {
-                  setSelectedFlows(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(flow.id);
-                    return newSet;
-                  });
-                }
-              }}
-              disabled={loadingFlows.has(flow.id)}
-            />
-          </div>
+      <div className="grid grid-cols-1 gap-4">
+        {filteredFlows.map(flow => (
+          <Card key={flow.id} className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1" onClick={() => handleFlowClick(flow.id)}>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center relative">
+                    <Play className="w-6 h-6 text-primary" />
+                    <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${getStatusColor(flow.status)}`} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-foreground">{flow.name}</h3>
+                      <Badge variant={getStatusBadge(flow.status) as any}>
+                        {flow.status}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground mb-3">{flow.description}</p>
+                    <div className="flex gap-6 text-sm text-muted-foreground">
+                      <span>Last run: {flow.lastRun}</span>
+                      <span>Total runs: {flow.totalRuns}</span>
+                      <span>Success rate: {flow.successRate}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Toggle flow status
+                    }}
+                  >
+                    {flow.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditFlow(flow.id, flow.name)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDuplicateFlow(flow.id, flow.name)}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteFlow(flow.id, flow.name)} className="text-red-600">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
-
-      {/* Bulk Actions Bar */}
-      <BulkActionsBar
-        selectedCount={selectedFlows.size}
-        onClearSelection={() => setSelectedFlows(new Set())}
-        onBulkAction={handleBulkAction}
-        disabled={loadingFlows.size > 0}
-      />
-
-      {/* Modals */}
-      <FlowActivationModal
-        isOpen={activationModal.isOpen}
-        onClose={() => setActivationModal({ isOpen: false, flowId: null, flowName: '', action: 'activate' })}
-        flowName={activationModal.flowName}
-        action={activationModal.action}
-      />
-
-      <FlowSettingsModal
-        isOpen={settingsModal.isOpen}
-        onClose={() => setSettingsModal({ isOpen: false, flowId: null, flowName: '' })}
-        flowName={settingsModal.flowName}
-        flowId={settingsModal.flowId || 0}
-      />
     </div>
   );
 };

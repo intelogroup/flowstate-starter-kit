@@ -123,7 +123,6 @@ const FlowCard = ({
                     checked={flow.isActive}
                     onCheckedChange={(checked) => onToggleFlow(flow.id, checked, flow.name)}
                     disabled={disabled}
-                    size="sm"
                   />
                   <span className="text-xs text-muted-foreground">
                     {flow.isActive ? 'Active' : 'Paused'}

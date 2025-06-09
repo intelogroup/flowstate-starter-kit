@@ -103,7 +103,7 @@ const EnhancedValidatedInput = ({
           displayError && "border-destructive bg-destructive/5 focus:border-destructive focus-visible:ring-destructive",
           isFocused && !displayError && "border-primary focus-visible:ring-primary"
         )}
-        aria-invalid={displayError}
+        aria-invalid={displayError ? true : false}
         aria-describedby={displayError ? `${id}-error` : undefined}
       />
       {displayError && displayErrorMessage && (

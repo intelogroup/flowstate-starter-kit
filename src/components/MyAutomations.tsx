@@ -264,6 +264,7 @@ const MyAutomations = () => {
         </>
       )}
 
+      {/* Modals */}
       <FlowActivationModal
         isOpen={activationModal.isOpen}
         onClose={onActivationComplete}

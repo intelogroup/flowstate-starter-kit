@@ -9,6 +9,8 @@ import AnalyticsDetailView from "./AnalyticsDetailView";
 
 const Analytics = () => {
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState("30d");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleMetricDrillDown = (metricType: string) => {
     setSelectedMetric(metricType);
@@ -16,6 +18,14 @@ const Analytics = () => {
 
   const handleBackToOverview = () => {
     setSelectedMetric(null);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulate refresh
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
   };
 
   if (selectedMetric) {
@@ -29,7 +39,12 @@ const Analytics = () => {
 
   return (
     <div className="p-6 space-y-6 bg-background">
-      <AnalyticsHeader />
+      <AnalyticsHeader 
+        timeRange={timeRange}
+        setTimeRange={setTimeRange}
+        isRefreshing={isRefreshing}
+        handleRefresh={handleRefresh}
+      />
       <AnalyticsOverview onMetricClick={handleMetricDrillDown} />
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <AnalyticsFlows />

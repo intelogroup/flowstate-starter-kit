@@ -1,44 +1,22 @@
 
-import { useNavigate } from "react-router-dom";
-import FlowsEmptyState from "./FlowsEmptyState";
-import DashboardHeader from "./DashboardHeader";
-import NotificationBanner from "./NotificationBanner";
-import AISearchSection from "./AISearchSection";
-import PopularTemplates from "./PopularTemplates";
 import ActiveFlowsSection from "./ActiveFlowsSection";
-import AttentionRequiredCard from "./AttentionRequiredCard";
+import PopularTemplates from "./PopularTemplates";
 import RecentActivityCard from "./RecentActivityCard";
+import AttentionRequiredCard from "./AttentionRequiredCard";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
-  const handleTemplateSelect = (templateId: number) => {
-    navigate(`/create-flow/${templateId}`);
-  };
-
-  const handleCreateFlow = () => {
-    navigate('/create-flow');
-  };
-
-  // Check if user has any flows - for now we'll assume they do
-  // In a real app, this would come from an API call
-  const hasFlows = true;
-
-  if (!hasFlows) {
-    return <FlowsEmptyState onCreateFlow={handleCreateFlow} />;
-  }
-
   return (
-    <div className="p-6 space-y-6 bg-background">
-      <DashboardHeader />
-      <NotificationBanner />
-      <AISearchSection onTemplateSelect={handleTemplateSelect} />
-      <PopularTemplates />
-      <ActiveFlowsSection onCreateFlow={handleCreateFlow} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AttentionRequiredCard />
-        <RecentActivityCard />
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <ActiveFlowsSection />
+          <PopularTemplates />
+        </div>
+        
+        <div className="space-y-6">
+          <AttentionRequiredCard />
+          <RecentActivityCard />
+        </div>
       </div>
     </div>
   );

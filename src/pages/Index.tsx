@@ -18,11 +18,17 @@ import { PageLoading } from "@/components/LoadingStates";
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [analyticsFilter, setAnalyticsFilter] = useState<string | undefined>();
 
   // Handle section transitions with loading states
-  const handleSectionChange = (newSection: string) => {
+  const handleSectionChange = (newSection: string, filter?: string) => {
     if (newSection !== activeSection) {
       setIsTransitioning(true);
+      
+      // Set analytics filter if provided
+      if (newSection === 'analytics' && filter) {
+        setAnalyticsFilter(filter);
+      }
       
       // Simulate navigation loading
       setTimeout(() => {
@@ -39,7 +45,7 @@ const Index = () => {
 
     switch (activeSection) {
       case "dashboard":
-        return <Dashboard />;
+        return <Dashboard onNavigate={handleSectionChange} />;
       case "templates":
         return <TemplateLibrary />;
       case "automations":
@@ -47,7 +53,7 @@ const Index = () => {
       case "flows":
         return <MyFlows />;
       case "analytics":
-        return <Analytics />;
+        return <Analytics initialFilter={analyticsFilter} />;
       case "notifications":
         return <Notifications />;
       case "documentation":
@@ -69,7 +75,7 @@ const Index = () => {
           </div>
         );
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={handleSectionChange} />;
     }
   };
 

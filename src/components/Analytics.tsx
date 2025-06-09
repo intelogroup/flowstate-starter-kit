@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AnalyticsHeader from "./AnalyticsHeader";
 import AnalyticsOverview from "./AnalyticsOverview";
 import AnalyticsFlows from "./AnalyticsFlows";
@@ -7,10 +7,36 @@ import AnalyticsUsage from "./AnalyticsUsage";
 import AnalyticsErrors from "./AnalyticsErrors";
 import AnalyticsDetailView from "./AnalyticsDetailView";
 
-const Analytics = () => {
+interface AnalyticsProps {
+  initialFilter?: string;
+}
+
+const Analytics = ({ initialFilter }: AnalyticsProps) => {
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState("30d");
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Handle initial filter from dashboard navigation
+  useEffect(() => {
+    if (initialFilter) {
+      switch (initialFilter) {
+        case 'all-flows':
+          setSelectedMetric('executions');
+          break;
+        case 'active-flows':
+          setSelectedMetric('executions');
+          break;
+        case 'execution-metrics':
+          setSelectedMetric('executions');
+          break;
+        case 'error-analysis':
+          setSelectedMetric('errorRate');
+          break;
+        default:
+          setSelectedMetric(null);
+      }
+    }
+  }, [initialFilter]);
 
   const handleMetricDrillDown = (metricType: string) => {
     setSelectedMetric(metricType);

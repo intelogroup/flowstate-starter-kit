@@ -1,14 +1,27 @@
 
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 const RecentActivityCard = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  
   const recentActivity = [
     { id: 1, automation: "Email to Drive", action: "Execution completed", time: "2 min ago", status: "success" },
     { id: 2, automation: "Slack Notifications", action: "New email processed", time: "5 min ago", status: "success" },
     { id: 3, automation: "Contact Form to CRM", action: "Contact added", time: "12 min ago", status: "success" },
     { id: 4, automation: "Invoice Processing", action: "Failed - Auth required", time: "1 hour ago", status: "error" },
   ];
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Card>
@@ -17,20 +30,24 @@ const RecentActivityCard = () => {
         <CardDescription>Latest automation executions</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {recentActivity.map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${item.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.automation}</p>
-                <p className="text-xs text-muted-foreground">{item.action}</p>
+        {isLoading ? (
+          <LoadingSkeleton type="activity" count={4} />
+        ) : (
+          <div className="space-y-4">
+            {recentActivity.map((item) => (
+              <div key={item.id} className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${item.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{item.automation}</p>
+                  <p className="text-xs text-muted-foreground">{item.action}</p>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {item.time}
+                </Badge>
               </div>
-              <Badge variant="secondary" className="text-xs">
-                {item.time}
-              </Badge>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

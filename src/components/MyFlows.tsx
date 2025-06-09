@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { showFlowToasts, showSystemToasts } from "@/components/TransitionalToasts";
 import FlowActivationModal from "./FlowActivationModal";
 import QuickStats from "./QuickStats";
 import FlowFilters from "./FlowFilters";
@@ -52,6 +51,8 @@ const MyFlows = () => {
         : flow
     ));
     
+    showFlowToasts.executing(flowName);
+    
     setTimeout(() => {
       setLoadingFlows(prev => {
         const newSet = new Set(prev);
@@ -72,11 +73,11 @@ const MyFlows = () => {
           : flow
       ));
       
-      toast({
-        title: success ? "Flow Executed Successfully" : "Flow Execution Failed",
-        description: `${flowName} ${success ? 'completed successfully' : 'failed to execute'}.`,
-        variant: success ? "default" : "destructive"
-      });
+      if (success) {
+        showFlowToasts.completed(flowName, "2.3s");
+      } else {
+        showFlowToasts.failed(flowName, "Connection timeout");
+      }
     }, 2000);
   };
 
@@ -87,10 +88,11 @@ const MyFlows = () => {
         : flow
     ));
     
-    toast({
-      title: `Flow ${newStatus ? 'Activated' : 'Paused'}`,
-      description: `${flowName} has been ${newStatus ? 'activated' : 'paused'}.`,
-    });
+    if (newStatus) {
+      showFlowToasts.activated(flowName);
+    } else {
+      showFlowToasts.paused(flowName);
+    }
   };
 
   const handleFlowSettings = (flowId: number, flowName: string) => {
@@ -104,20 +106,17 @@ const MyFlows = () => {
   const handleResolveIssue = (flowId: number) => {
     const flow = flows.find(f => f.id === flowId);
     if (flow) {
-      toast({
-        title: "Resolve Issue",
-        description: `Opening resolution wizard for ${flow.name}...`,
-      });
+      showSystemToasts.saving();
+      setTimeout(() => {
+        showSystemToasts.saved();
+      }, 1500);
       // In real implementation, this would open a resolution dialog or navigate to a fix page
     }
   };
 
   const handleBulkAction = (action: string) => {
     console.log(`Bulk ${action} for flows:`, Array.from(selectedFlows));
-    toast({
-      title: "Bulk Action",
-      description: `${action} applied to ${selectedFlows.size} flows.`,
-    });
+    showSystemToasts.saved();
     setSelectedFlows(new Set());
   };
 

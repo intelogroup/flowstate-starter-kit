@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, RotateCcw, Copy, FileText, Clock, Filter, AlertTriangle } from "lucide-react";
 import DynamicInput from "./DynamicInput";
 import { useDynamicDataMapping } from "@/hooks/useDynamicDataMapping";
+import { toast } from "@/hooks/use-toast";
 
 const FlowConfigurationForm = () => {
   const { getAvailableData } = useDynamicDataMapping();
@@ -29,6 +31,53 @@ const FlowConfigurationForm = () => {
     customNaming: true,
     namingPattern: "{{step_1.output.date_received}}_{{step_1.output.sender_name}}_{{step_2.output.file_name}}"
   });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string) => {
+    let error = "";
+    
+    switch (field) {
+      case "flowName":
+        if (!value.trim()) {
+          error = "A flow name is required.";
+        }
+        break;
+      case "maxFileSize":
+        const size = parseInt(value);
+        if (isNaN(size) || size <= 0) {
+          error = "File size must be a positive number.";
+        } else if (size > 100) {
+          error = "File size cannot exceed 100 MB.";
+        }
+        break;
+      case "retryAttempts":
+        const attempts = parseInt(value);
+        if (isNaN(attempts) || attempts < 0) {
+          error = "Retry attempts must be a non-negative number.";
+        } else if (attempts > 10) {
+          error = "Maximum 10 retry attempts allowed.";
+        }
+        break;
+    }
+
+    setErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
+    validateField(field, value);
+  };
+
+  const handleSave = () => {
+    toast({
+      title: "Flow Saved Successfully",
+      description: "Your flow configuration has been saved.",
+    });
+  };
 
   const scheduleOptions = [
     { value: "realtime", label: "Real-time (as emails arrive)", description: "Immediate processing" },
@@ -71,7 +120,7 @@ const FlowConfigurationForm = () => {
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={handleSave}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
               </Button>
@@ -94,10 +143,14 @@ const FlowConfigurationForm = () => {
                     <Label htmlFor="flowName">Flow Name *</Label>
                     <DynamicInput
                       value={config.flowName}
-                      onChange={(value) => setConfig(prev => ({ ...prev, flowName: value }))}
+                      onChange={(value) => handleInputChange('flowName', value)}
                       placeholder="Enter flow name"
                       availableSteps={availableSteps}
+                      className={errors.flowName ? "border-destructive" : ""}
                     />
+                    {errors.flowName && (
+                      <p className="text-sm text-destructive mt-1">{errors.flowName}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="description">Description</Label>
@@ -118,7 +171,7 @@ const FlowConfigurationForm = () => {
                       availableSteps={availableSteps}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Use the {...} button to insert dynamic data from previous steps
+                      Use the {"{..."} button to insert dynamic data from previous steps
                     </p>
                   </div>
                 </div>
@@ -144,9 +197,13 @@ const FlowConfigurationForm = () => {
                     <DynamicInput
                       type="number"
                       value={config.maxFileSize.toString()}
-                      onChange={(value) => setConfig(prev => ({ ...prev, maxFileSize: parseInt(value) || 0 }))}
+                      onChange={(value) => handleInputChange('maxFileSize', value)}
                       availableSteps={availableSteps}
+                      className={errors.maxFileSize ? "border-destructive" : ""}
                     />
+                    {errors.maxFileSize && (
+                      <p className="text-sm text-destructive mt-1">{errors.maxFileSize}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -247,7 +304,7 @@ const FlowConfigurationForm = () => {
                         availableSteps={availableSteps}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Click the {...} button to insert dynamic data from previous steps
+                        Click the {"{..."} button to insert dynamic data from previous steps
                       </p>
                     </div>
                   )}
@@ -263,9 +320,13 @@ const FlowConfigurationForm = () => {
                     <DynamicInput
                       type="number"
                       value={config.retryAttempts.toString()}
-                      onChange={(value) => setConfig(prev => ({ ...prev, retryAttempts: parseInt(value) || 0 }))}
+                      onChange={(value) => handleInputChange('retryAttempts', value)}
                       availableSteps={availableSteps}
+                      className={errors.retryAttempts ? "border-destructive" : ""}
                     />
+                    {errors.retryAttempts && (
+                      <p className="text-sm text-destructive mt-1">{errors.retryAttempts}</p>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
                       Number of retry attempts on failure
                     </p>

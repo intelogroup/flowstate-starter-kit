@@ -1,8 +1,9 @@
 
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -36,6 +37,8 @@ const AutomationFilters = ({
   onTriggerFilterChange,
   onClearFilters,
 }: AutomationFiltersProps) => {
+  const hasActiveFilters = searchTerm || statusFilter !== "all" || triggerFilter !== "all";
+
   return (
     <>
       {/* Search and Filters */}
@@ -48,6 +51,16 @@ const AutomationFilters = ({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => onSearchChange("")}
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          )}
         </div>
         
         <Select value={statusFilter} onValueChange={onStatusFilterChange}>
@@ -73,7 +86,48 @@ const AutomationFilters = ({
             ))}
           </SelectContent>
         </Select>
+
+        {hasActiveFilters && (
+          <Button variant="outline" onClick={onClearFilters}>
+            <X className="w-4 h-4 mr-2" />
+            Clear Filters
+          </Button>
+        )}
       </div>
+
+      {/* Active Filters Display */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          {searchTerm && (
+            <Badge variant="secondary" className="gap-1">
+              Search: {searchTerm}
+              <X 
+                className="w-3 h-3 cursor-pointer" 
+                onClick={() => onSearchChange("")}
+              />
+            </Badge>
+          )}
+          {statusFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              Status: {statusFilter}
+              <X 
+                className="w-3 h-3 cursor-pointer" 
+                onClick={() => onStatusFilterChange("all")}
+              />
+            </Badge>
+          )}
+          {triggerFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              Trigger: {triggerFilter}
+              <X 
+                className="w-3 h-3 cursor-pointer" 
+                onClick={() => onTriggerFilterChange("all")}
+              />
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* No Results State */}
       {!hasResults && totalAutomations > 0 && (

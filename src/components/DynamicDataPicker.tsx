@@ -1,125 +1,128 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Plus, Braces } from 'lucide-react';
-import { FlowStep, DataField } from '@/hooks/useDynamicDataMapping';
+import { useState } from "react";
+import { ChevronDown, Braces, Database, Mail, Calendar, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+
+interface DataField {
+  key: string;
+  label: string;
+  type: string;
+  example?: string;
+}
+
+interface DataStep {
+  stepId: string;
+  stepName: string;
+  stepType: string;
+  fields: DataField[];
+}
 
 interface DynamicDataPickerProps {
-  availableSteps: FlowStep[];
+  availableData: DataStep[];
   onSelect: (placeholder: string) => void;
-  variant?: 'plus' | 'braces';
-  size?: 'sm' | 'md';
+  size?: "sm" | "default" | "lg";
+  variant?: "outline" | "ghost" | "secondary";
+  className?: string;
 }
 
 const DynamicDataPicker = ({ 
-  availableSteps, 
+  availableData, 
   onSelect, 
-  variant = 'plus',
-  size = 'sm' 
+  size = "sm",
+  variant = "outline",
+  className = ""
 }: DynamicDataPickerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleSelect = (stepId: string, fieldKey: string) => {
-    const placeholder = `{{${stepId}.output.${fieldKey}}}`;
+  const getStepIcon = (stepType: string) => {
+    switch (stepType.toLowerCase()) {
+      case 'gmail':
+      case 'email':
+        return <Mail className="w-4 h-4" />;
+      case 'database':
+      case 'storage':
+        return <Database className="w-4 h-4" />;
+      case 'calendar':
+        return <Calendar className="w-4 h-4" />;
+      default:
+        return <Braces className="w-4 h-4" />;
+    }
+  };
+
+  const handleFieldSelect = (stepId: string, fieldKey: string) => {
+    const placeholder = `{{${stepId}.${fieldKey}}}`;
     onSelect(placeholder);
-    setIsOpen(false);
+    setOpen(false);
   };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'email': return 'text-blue-600';
-      case 'date': return 'text-green-600';
-      case 'number': return 'text-purple-600';
-      case 'boolean': return 'text-orange-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'email': return '@';
-      case 'date': return '📅';
-      case 'number': return '#';
-      case 'boolean': return '✓';
-      default: return 'T';
-    }
-  };
-
-  if (availableSteps.length === 0) {
-    return null;
-  }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
-          variant="ghost"
+          variant={variant}
           size={size}
-          className={`${size === 'sm' ? 'h-6 w-6 p-0' : 'h-8 w-8 p-0'} hover:bg-primary/10 border border-border rounded`}
-          title="Insert dynamic data"
+          className={`h-8 w-8 p-0 ${className}`}
+          type="button"
         >
-          {variant === 'plus' ? (
-            <Plus className={`${size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'}`} />
-          ) : (
-            <Braces className={`${size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'}`} />
-          )}
+          <Braces className="w-4 h-4" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="start" 
-        className="w-80 max-h-96 overflow-y-auto bg-popover border shadow-lg"
-      >
-        <DropdownMenuLabel className="text-sm font-semibold">
-          Insert Dynamic Data
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
-        {availableSteps.map((step, stepIndex) => (
-          <div key={step.id}>
-            <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1">
-              {step.name}
-            </DropdownMenuLabel>
-            {step.outputs.map((field) => (
-              <DropdownMenuItem
-                key={`${step.id}.${field.key}`}
-                onClick={() => handleSelect(step.id, field.key)}
-                className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-accent"
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <span className={`text-xs font-mono w-4 text-center ${getTypeColor(field.type)}`}>
-                    {getTypeIcon(field.type)}
-                  </span>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{field.label}</div>
-                    {field.description && (
-                      <div className="text-xs text-muted-foreground">{field.description}</div>
-                    )}
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="start">
+        <div className="p-3 border-b">
+          <h3 className="font-semibold text-sm">Insert Dynamic Data</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Select data from previous steps
+          </p>
+        </div>
+        <ScrollArea className="h-80">
+          <div className="p-2">
+            {availableData.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground">
+                <Braces className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No data available</p>
+                <p className="text-xs">Add previous steps to see available data</p>
+              </div>
+            ) : (
+              availableData.map((step) => (
+                <div key={step.stepId} className="mb-4">
+                  <div className="flex items-center gap-2 mb-2 px-2">
+                    {getStepIcon(step.stepType)}
+                    <span className="font-medium text-sm">{step.stepName}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {step.stepType}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    {step.fields.map((field) => (
+                      <button
+                        key={field.key}
+                        onClick={() => handleFieldSelect(step.stepId, field.key)}
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{field.label}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {field.type}
+                          </Badge>
+                        </div>
+                        {field.example && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            e.g., {field.example}
+                          </p>
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground font-mono">
-                  {field.type}
-                </div>
-              </DropdownMenuItem>
-            ))}
-            {stepIndex < availableSteps.length - 1 && <DropdownMenuSeparator />}
+              ))
+            )}
           </div>
-        ))}
-        
-        {availableSteps.length === 0 && (
-          <DropdownMenuItem disabled className="text-center text-muted-foreground">
-            No previous steps available
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
   );
 };
 

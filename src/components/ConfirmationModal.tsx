@@ -1,6 +1,6 @@
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Trash2, Pause, Play } from "lucide-react";
+import { AlertTriangle, Trash2, Pause, Play, CheckCircle, Info } from "lucide-react";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -10,8 +10,8 @@ interface ConfirmationModalProps {
   description: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'destructive' | 'warning' | 'default';
-  type?: 'delete' | 'pause' | 'activate' | 'generic';
+  variant?: 'destructive' | 'warning' | 'default' | 'success';
+  type?: 'delete' | 'pause' | 'activate' | 'generic' | 'info';
 }
 
 const ConfirmationModal = ({
@@ -33,8 +33,23 @@ const ConfirmationModal = ({
         return <Pause className="w-6 h-6 text-yellow-600" />;
       case 'activate':
         return <Play className="w-6 h-6 text-green-600" />;
+      case 'info':
+        return <Info className="w-6 h-6 text-blue-600" />;
       default:
         return <AlertTriangle className="w-6 h-6 text-yellow-600" />;
+    }
+  };
+
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'destructive':
+        return 'bg-destructive text-destructive-foreground hover:bg-destructive/90';
+      case 'warning':
+        return 'bg-yellow-600 text-white hover:bg-yellow-700';
+      case 'success':
+        return 'bg-green-600 text-white hover:bg-green-700';
+      default:
+        return '';
     }
   };
 
@@ -54,7 +69,7 @@ const ConfirmationModal = ({
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={variant === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+            className={getVariantStyles()}
           >
             {confirmText}
           </AlertDialogAction>

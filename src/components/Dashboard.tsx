@@ -54,17 +54,17 @@ const Dashboard = () => {
       {/* Quick Stats */}
       <QuickStats />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Recent Activity */}
-        <div className="lg:col-span-2 space-y-6">
-          <ActiveFlowsSection />
-          <RecentActivityCard />
+      {/* Main Content Grid - Updated Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Left Column - Popular Templates (More Prominent) */}
+        <div className="xl:col-span-2 space-y-6">
+          <PopularTemplates />
         </div>
 
-        {/* Right Column - Templates */}
+        {/* Right Column - Activity */}
         <div className="space-y-6">
-          <PopularTemplates />
+          <ActiveFlowsSection />
+          <RecentActivityCard />
         </div>
       </div>
     </div>

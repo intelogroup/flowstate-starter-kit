@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
@@ -111,7 +110,7 @@ export const UserProfile = ({
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    addAlert(supabaseAlertHelpers.databaseSuccess('update', 'user profile'));
+    addAlert(supabaseAlertHelpers.dataSuccess('update', 'user profile'));
     setIsEditingProfile(false);
   };
 
@@ -121,7 +120,7 @@ export const UserProfile = ({
       type: 'info',
       title: 'Coming Soon',
       message: 'Avatar upload will be available after Supabase integration',
-      source: 'user'
+      source: 'general'
     });
   };
 

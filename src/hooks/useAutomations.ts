@@ -97,7 +97,7 @@ export const useAutomations = (
     initialParams?.filters || {}
   );
 
-  // Derived state for search and filters
+  // Derived state for search and filters - fix type issues
   const searchTerm = filters.search || "";
   const statusFilter = filters.status || "all";
   const triggerFilter = filters.trigger || "all";

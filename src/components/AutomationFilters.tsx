@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NoFilterResultsEmpty } from "./EmptyStates";
 
 interface AutomationFiltersProps {
   searchTerm: string;
@@ -129,20 +130,9 @@ const AutomationFilters = ({
         </div>
       )}
 
-      {/* No Results State */}
+      {/* No Results State - Use new EmptyState component */}
       {!hasResults && totalAutomations > 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No automations found</h3>
-            <p className="text-muted-foreground mb-4">
-              Try adjusting your search or filter criteria
-            </p>
-            <Button variant="outline" onClick={onClearFilters}>
-              Clear Filters
-            </Button>
-          </CardContent>
-        </Card>
+        <NoFilterResultsEmpty onClearFilters={onClearFilters} />
       )}
     </>
   );

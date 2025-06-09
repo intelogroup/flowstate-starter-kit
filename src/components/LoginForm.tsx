@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ValidatedFormField, useFormValidation, validators } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 
 interface LoginFormData {
   email: string;
@@ -124,6 +124,7 @@ export const LoginForm = ({
               size="sm"
               onClick={onForgotPassword}
               className="px-0 text-sm"
+              disabled={isSubmitting}
             >
               Forgot password?
             </Button>
@@ -134,7 +135,14 @@ export const LoginForm = ({
             className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              'Sign in'
+            )}
           </Button>
 
           <div className="text-center">
@@ -147,6 +155,7 @@ export const LoginForm = ({
               size="sm"
               onClick={onSignUpRedirect}
               className="px-0 text-sm"
+              disabled={isSubmitting}
             >
               Sign up
             </Button>

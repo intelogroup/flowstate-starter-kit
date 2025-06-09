@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ValidatedFormField, useFormValidation } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 
 interface PasswordResetFormData {
   email: string;
@@ -143,7 +143,14 @@ export const PasswordResetForm = ({
             className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Sending...' : 'Send reset link'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              'Send reset link'
+            )}
           </Button>
 
           <Button
@@ -151,6 +158,7 @@ export const PasswordResetForm = ({
             variant="outline"
             className="w-full"
             onClick={onBackToLogin}
+            disabled={isSubmitting}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to login

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ValidatedFormField, useFormValidation, validators } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { User, Mail, Lock, Shield } from 'lucide-react';
+import { User, Mail, Lock, Shield, Loader2 } from 'lucide-react';
 
 interface RegistrationFormData {
   fullName: string;
@@ -164,7 +164,14 @@ export const RegistrationForm = ({
             className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating account...' : 'Create account'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              'Create account'
+            )}
           </Button>
 
           <div className="text-center">
@@ -177,6 +184,7 @@ export const RegistrationForm = ({
               size="sm"
               onClick={onLoginRedirect}
               className="px-0 text-sm"
+              disabled={isSubmitting}
             >
               Sign in
             </Button>

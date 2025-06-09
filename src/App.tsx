@@ -1,68 +1,31 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { AlertProvider } from "@/components/AlertSystem";
-import { LoadingOverlay } from "@/components/TransitionalScreens";
-import Layout from "./components/Layout";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import FlowDetails from "./components/FlowDetails";
+import { Toaster } from "@/components/ui/toaster";
+import { AlertProvider } from "./components/AlertSystem";
+import { EnhancedAlertProvider } from "./components/EnhancedAlertSystem";
 import FlowWizard from "./components/FlowWizard";
-import TemplatePreview from "./components/TemplatePreview";
-import TemplateLibrary from "./components/TemplateLibrary";
-import FlowsPage from "./pages/FlowsPage";
-import RequestFlowPage from "./pages/RequestFlowPage";
-import { useState, useEffect } from "react";
+import { AuthenticationFlow } from "./components/AuthenticationFlow";
 
-const queryClient = new QueryClient();
-
-const App = () => {
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate initial app loading
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="flowstate-ui-theme">
-        <AlertProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <LoadingOverlay 
-              isVisible={isInitialLoading} 
-              message="Loading FlowState..." 
-            />
-            <BrowserRouter>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/flows" element={<FlowsPage />} />
-                  <Route path="/templates" element={<TemplateLibrary />} />
-                  <Route path="/flow/:id" element={<FlowDetails />} />
-                  <Route path="/create-flow" element={<FlowWizard />} />
-                  <Route path="/create-flow/:templateId" element={<FlowWizard />} />
-                  <Route path="/template/:id" element={<TemplatePreview />} />
-                  <Route path="/request-flow" element={<RequestFlowPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AlertProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <EnhancedAlertProvider>
+      <AlertProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/create-flow" element={<FlowWizard />} />
+            <Route path="/create-flow/:templateId" element={<FlowWizard />} />
+            <Route path="/template/:templateId" element={<FlowWizard />} />
+            <Route path="/auth" element={<AuthenticationFlow />} />
+            <Route path="/login" element={<AuthenticationFlow initialView="login" />} />
+            <Route path="/register" element={<AuthenticationFlow initialView="register" />} />
+            <Route path="/reset-password" element={<AuthenticationFlow initialView="reset-password" />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </AlertProvider>
+    </EnhancedAlertProvider>
   );
-};
+}
 
 export default App;

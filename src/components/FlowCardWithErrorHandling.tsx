@@ -27,7 +27,7 @@ interface FlowCardWithErrorHandlingProps {
   onReconnect?: (id: number) => void;
 }
 
-const FlowCardWithErrorHandling = ({ 
+export const FlowCardWithErrorHandling = ({ 
   flow, 
   onToggle, 
   onSettings, 
@@ -123,5 +123,3 @@ const FlowCardWithErrorHandling = ({
     </Card>
   );
 };
-
-export default FlowCardWithErrorHandling;

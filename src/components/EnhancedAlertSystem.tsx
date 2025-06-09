@@ -1,33 +1,30 @@
 
-import { useState, createContext, useContext, ReactNode, useEffect } from "react";
+import { useState, createContext, useContext, ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Bell } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { X, CheckCircle, AlertTriangle, Info, AlertCircle, Database, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface AlertMessage {
+interface EnhancedAlertMessage {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message: string;
+  source?: 'supabase' | 'network' | 'validation' | 'general';
   persistent?: boolean;
   duration?: number;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center';
   actions?: {
     label: string;
     onClick: () => void;
     variant?: 'default' | 'destructive' | 'outline';
   }[];
-  source?: 'supabase' | 'form' | 'system' | 'user';
 }
 
 interface EnhancedAlertContextType {
-  alerts: AlertMessage[];
-  addAlert: (alert: Omit<AlertMessage, 'id'>) => string;
+  alerts: EnhancedAlertMessage[];
+  addAlert: (alert: Omit<EnhancedAlertMessage, 'id'>) => void;
   removeAlert: (id: string) => void;
   clearAlerts: () => void;
-  clearBySource: (source: string) => void;
 }
 
 const EnhancedAlertContext = createContext<EnhancedAlertContextType | undefined>(undefined);
@@ -42,34 +39,23 @@ export const useEnhancedAlerts = () => {
 
 interface EnhancedAlertProviderProps {
   children: ReactNode;
-  maxAlerts?: number;
 }
 
-export const EnhancedAlertProvider = ({ children, maxAlerts = 5 }: EnhancedAlertProviderProps) => {
-  const [alerts, setAlerts] = useState<AlertMessage[]>([]);
+export const EnhancedAlertProvider = ({ children }: EnhancedAlertProviderProps) => {
+  const [alerts, setAlerts] = useState<EnhancedAlertMessage[]>([]);
 
-  const addAlert = (alert: Omit<AlertMessage, 'id'>) => {
-    const id = `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newAlert = { 
-      ...alert, 
-      id,
-      duration: alert.duration ?? (alert.persistent ? undefined : 5000),
-      position: alert.position ?? 'top-right'
-    };
-    
-    setAlerts(prev => {
-      const updated = [newAlert, ...prev];
-      return updated.slice(0, maxAlerts);
-    });
+  const addAlert = (alert: Omit<EnhancedAlertMessage, 'id'>) => {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const newAlert = { ...alert, id };
+    setAlerts(prev => [newAlert, ...prev]);
 
-    // Auto-remove non-persistent alerts
-    if (!alert.persistent && newAlert.duration) {
+    // Auto-remove alerts based on duration or default behavior
+    const duration = alert.duration || (alert.persistent ? 0 : 5000);
+    if (duration > 0) {
       setTimeout(() => {
         removeAlert(id);
-      }, newAlert.duration);
+      }, duration);
     }
-
-    return id;
   };
 
   const removeAlert = (id: string) => {
@@ -80,65 +66,42 @@ export const EnhancedAlertProvider = ({ children, maxAlerts = 5 }: EnhancedAlert
     setAlerts([]);
   };
 
-  const clearBySource = (source: string) => {
-    setAlerts(prev => prev.filter(alert => alert.source !== source));
-  };
-
   return (
-    <EnhancedAlertContext.Provider value={{ alerts, addAlert, removeAlert, clearAlerts, clearBySource }}>
+    <EnhancedAlertContext.Provider value={{ alerts, addAlert, removeAlert, clearAlerts }}>
       {children}
-      <AlertContainer />
+      <EnhancedGlobalAlertContainer />
     </EnhancedAlertContext.Provider>
   );
 };
 
-const AlertContainer = () => {
+const EnhancedGlobalAlertContainer = () => {
   const { alerts, removeAlert } = useEnhancedAlerts();
-  
-  // Group alerts by position
-  const alertsByPosition = alerts.reduce((acc, alert) => {
-    const position = alert.position || 'top-right';
-    if (!acc[position]) acc[position] = [];
-    acc[position].push(alert);
-    return acc;
-  }, {} as Record<string, AlertMessage[]>);
+
+  if (alerts.length === 0) return null;
 
   return (
-    <>
-      {Object.entries(alertsByPosition).map(([position, positionAlerts]) => (
-        <div
-          key={position}
-          className={cn(
-            "fixed z-50 space-y-2 max-w-md",
-            position === 'top-right' && "top-4 right-4",
-            position === 'top-left' && "top-4 left-4",
-            position === 'bottom-right' && "bottom-4 right-4",
-            position === 'bottom-left' && "bottom-4 left-4",
-            position === 'top-center' && "top-4 left-1/2 -translate-x-1/2"
-          )}
-        >
-          <AnimatePresence>
-            {positionAlerts.map(alert => (
-              <AlertCard 
-                key={alert.id} 
-                alert={alert} 
-                onDismiss={() => removeAlert(alert.id)} 
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-md">
+      {alerts.map(alert => (
+        <EnhancedAlertCard key={alert.id} alert={alert} onDismiss={() => removeAlert(alert.id)} />
       ))}
-    </>
+    </div>
   );
 };
 
-interface AlertCardProps {
-  alert: AlertMessage;
+interface EnhancedAlertCardProps {
+  alert: EnhancedAlertMessage;
   onDismiss: () => void;
 }
 
-const AlertCard = ({ alert, onDismiss }: AlertCardProps) => {
+const EnhancedAlertCard = ({ alert, onDismiss }: EnhancedAlertCardProps) => {
   const getIcon = () => {
+    if (alert.source === 'supabase') {
+      return <Database className="h-4 w-4" />;
+    }
+    if (alert.source === 'network') {
+      return <Wifi className="h-4 w-4" />;
+    }
+    
     switch (alert.type) {
       case 'success': return <CheckCircle className="h-4 w-4" />;
       case 'error': return <AlertCircle className="h-4 w-4" />;
@@ -151,138 +114,148 @@ const AlertCard = ({ alert, onDismiss }: AlertCardProps) => {
     return alert.type === 'error' ? 'destructive' : 'default';
   };
 
-  const getSourceBadge = () => {
-    if (!alert.source) return null;
-    
-    const sourceConfig = {
-      supabase: { label: 'Database', className: 'bg-green-100 text-green-800' },
-      form: { label: 'Form', className: 'bg-blue-100 text-blue-800' },
-      system: { label: 'System', className: 'bg-gray-100 text-gray-800' },
-      user: { label: 'User', className: 'bg-purple-100 text-purple-800' }
-    };
+  const getBorderClass = () => {
+    switch (alert.source) {
+      case 'supabase': return 'border-l-green-500';
+      case 'network': return 'border-l-blue-500';
+      case 'validation': return 'border-l-yellow-500';
+      default: 
+        switch (alert.type) {
+          case 'success': return 'border-l-green-500';
+          case 'warning': return 'border-l-yellow-500';
+          case 'info': return 'border-l-blue-500';
+          case 'error': return 'border-l-red-500';
+          default: return 'border-l-gray-500';
+        }
+    }
+  };
 
-    const config = sourceConfig[alert.source as keyof typeof sourceConfig];
-    if (!config) return null;
-
-    return (
-      <span className={cn("text-xs px-2 py-1 rounded-full", config.className)}>
-        {config.label}
-      </span>
-    );
+  const getBackgroundClass = () => {
+    switch (alert.type) {
+      case 'success': return 'bg-green-50 dark:bg-green-950';
+      case 'warning': return 'bg-yellow-50 dark:bg-yellow-950';
+      case 'info': return 'bg-blue-50 dark:bg-blue-950';
+      case 'error': return 'bg-red-50 dark:bg-red-950';
+      default: return '';
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <Alert 
+      variant={getVariant()} 
+      className={cn(
+        "shadow-lg border-l-4 animate-slide-in-right",
+        getBorderClass(),
+        getBackgroundClass()
+      )}
     >
-      <Alert variant={getVariant()} className={cn(
-        "shadow-lg border-l-4 backdrop-blur-sm",
-        alert.type === 'success' && "border-l-green-500 bg-green-50/90 dark:bg-green-950/90",
-        alert.type === 'warning' && "border-l-yellow-500 bg-yellow-50/90 dark:bg-yellow-950/90",
-        alert.type === 'info' && "border-l-blue-500 bg-blue-50/90 dark:bg-blue-950/90",
-        alert.type === 'error' && "border-l-red-500"
-      )}>
-        {getIcon()}
-        <div className="flex-1">
-          <AlertTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {alert.title}
-              {getSourceBadge()}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDismiss}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </AlertTitle>
-          <AlertDescription className="mt-1">
-            {alert.message}
-            {alert.actions && alert.actions.length > 0 && (
-              <div className="flex gap-2 mt-3">
-                {alert.actions.map((action, index) => (
-                  <Button
-                    key={index}
-                    variant={action.variant || "outline"}
-                    size="sm"
-                    onClick={action.onClick}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
-              </div>
+      {getIcon()}
+      <div className="flex-1">
+        <AlertTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {alert.title}
+            {alert.source && (
+              <span className="text-xs px-2 py-1 bg-muted rounded text-muted-foreground">
+                {alert.source}
+              </span>
             )}
-          </AlertDescription>
-        </div>
-      </Alert>
-    </motion.div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDismiss}
+            className="h-6 w-6 p-0 hover:bg-transparent"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </AlertTitle>
+        <AlertDescription className="mt-1">
+          {alert.message}
+          {alert.actions && alert.actions.length > 0 && (
+            <div className="flex gap-2 mt-3">
+              {alert.actions.map((action, index) => (
+                <Button
+                  key={index}
+                  variant={action.variant || "outline"}
+                  size="sm"
+                  onClick={action.onClick}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          )}
+        </AlertDescription>
+      </div>
+    </Alert>
   );
 };
 
-// Predefined alert helpers for Supabase integration
+// Enhanced alert helpers with source tracking
 export const supabaseAlertHelpers = {
-  databaseSuccess: (operation: string, table?: string) => ({
-    type: 'success' as const,
-    title: 'Database Operation Successful',
-    message: `${operation}${table ? ` in ${table}` : ''} completed successfully`,
-    source: 'supabase' as const,
-    duration: 3000
-  }),
-
-  databaseError: (operation: string, error: string) => ({
-    type: 'error' as const,
-    title: 'Database Error',
-    message: `${operation} failed: ${error}`,
-    source: 'supabase' as const,
-    persistent: true,
-    actions: [
-      {
-        label: 'Retry',
-        onClick: () => console.log('Retry operation')
-      }
-    ]
-  }),
-
   authSuccess: (action: string) => ({
     type: 'success' as const,
-    title: 'Authentication Successful',
-    message: `${action} completed successfully`,
+    title: `${action} Successful`,
+    message: 'You have been successfully authenticated',
     source: 'supabase' as const,
     duration: 3000
   }),
 
-  authError: (action: string, error: string) => ({
+  authError: (action: string, message: string) => ({
     type: 'error' as const,
-    title: 'Authentication Error',
-    message: `${action} failed: ${error}`,
+    title: `${action} Failed`,
+    message,
     source: 'supabase' as const,
     persistent: true
   }),
 
-  validationError: (field: string, message: string) => ({
-    type: 'error' as const,
-    title: 'Validation Error',
-    message: `${field}: ${message}`,
-    source: 'form' as const,
-    duration: 6000
+  dataSuccess: (action: string, entity: string) => ({
+    type: 'success' as const,
+    title: `${entity} ${action}`,
+    message: `${entity} has been successfully ${action.toLowerCase()}`,
+    source: 'supabase' as const,
+    duration: 3000
   }),
 
-  networkError: () => ({
+  dataError: (action: string, entity: string, message?: string) => ({
+    type: 'error' as const,
+    title: `${entity} ${action} Failed`,
+    message: message || `Failed to ${action.toLowerCase()} ${entity.toLowerCase()}`,
+    source: 'supabase' as const,
+    persistent: true
+  }),
+
+  connectionError: () => ({
+    type: 'error' as const,
+    title: 'Connection Error',
+    message: 'Unable to connect to the database. Please check your connection.',
+    source: 'supabase' as const,
+    persistent: true
+  })
+};
+
+export const networkAlertHelpers = {
+  offline: () => ({
     type: 'warning' as const,
-    title: 'Network Issue',
-    message: 'Connection lost. Attempting to reconnect...',
-    source: 'system' as const,
-    persistent: true,
-    actions: [
-      {
-        label: 'Retry Now',
-        onClick: () => window.location.reload()
-      }
-    ]
+    title: 'You are offline',
+    message: 'Some features may not be available while offline',
+    source: 'network' as const,
+    persistent: true
+  }),
+
+  online: () => ({
+    type: 'success' as const,
+    title: 'Connection restored',
+    message: 'You are back online',
+    source: 'network' as const,
+    duration: 2000
+  }),
+
+  slowConnection: () => ({
+    type: 'info' as const,
+    title: 'Slow connection detected',
+    message: 'Some operations may take longer than usual',
+    source: 'network' as const,
+    duration: 5000
   })
 };

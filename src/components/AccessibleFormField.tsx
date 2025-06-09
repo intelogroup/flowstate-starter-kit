@@ -1,35 +1,20 @@
 
 import { useState } from 'react';
-import { EnhancedInput } from '@/components/ui/enhanced-input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-interface FieldConfig {
-  label: string;
-  type?: string;
-  placeholder?: string;
-  rules?: {
-    required?: boolean;
-    minLength?: number;
-    maxLength?: number;
-    pattern?: RegExp;
-    custom?: (value: string) => string | null;
-    email?: boolean;
-    strongPassword?: boolean;
-  };
-}
+import { FieldConfig } from './FormValidation';
 
 interface AccessibleFormFieldProps {
   name: string;
   config: FieldConfig;
   value: string;
   onChange: (value: string) => void;
-  onBlur?: () => void;
+  onBlur: () => void;
   error?: string;
   disabled?: boolean;
-  showValidation?: boolean;
   className?: string;
 }
 
@@ -40,123 +25,116 @@ export const AccessibleFormField = ({
   onChange,
   onBlur,
   error,
-  disabled,
-  showValidation = true,
-  className
+  disabled = false,
+  className = ""
 }: AccessibleFormFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-
   const isPassword = config.type === 'password';
-  const hasError = !!error;
-  const isValid = showValidation && !hasError && value.length > 0;
-  const fieldId = `field-${name}`;
-  const errorId = `${fieldId}-error`;
-  const helpId = `${fieldId}-help`;
+  const inputType = isPassword ? (showPassword ? 'text' : 'password') : config.type;
 
-  const getAriaDescribedBy = () => {
-    const ids = [];
-    if (hasError) ids.push(errorId);
-    if (config.rules?.required) ids.push(helpId);
-    return ids.length > 0 ? ids.join(' ') : undefined;
-  };
+  const inputId = `field-${name}`;
+  const errorId = `${inputId}-error`;
+  const descriptionId = `${inputId}-description`;
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={`space-y-2 ${className}`}>
       <Label 
-        htmlFor={fieldId}
+        htmlFor={inputId}
         className={cn(
-          "text-sm font-medium leading-6 tracking-wide",
-          hasError && "text-destructive",
-          config.rules?.required && "after:content-['*'] after:ml-1 after:text-destructive after:font-bold"
+          "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+          error && "text-destructive"
         )}
       >
         {config.label}
+        {config.rules.required && <span className="text-destructive ml-1">*</span>}
       </Label>
       
-      {/* Help text for required fields */}
-      {config.rules?.required && (
-        <p id={helpId} className="sr-only">
-          This field is required
-        </p>
-      )}
-      
-      <div className="relative group">
-        <EnhancedInput
-          id={fieldId}
+      <div className="relative">
+        <Input
+          id={inputId}
           name={name}
-          type={isPassword ? (showPassword ? 'text' : 'password') : config.type || 'text'}
+          type={inputType}
+          placeholder={config.placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false);
-            onBlur?.();
-          }}
-          placeholder={config.placeholder}
+          onBlur={onBlur}
           disabled={disabled}
-          hasError={hasError}
-          isValid={isValid}
-          aria-invalid={hasError}
-          aria-describedby={getAriaDescribedBy()}
-          aria-required={config.rules?.required}
-          autoComplete={
-            config.type === 'email' ? 'email' :
-            config.type === 'password' ? 'current-password' :
-            name === 'fullName' ? 'name' :
-            undefined
-          }
+          aria-invalid={!!error}
+          aria-describedby={cn(
+            error && errorId,
+            config.placeholder && descriptionId
+          )}
           className={cn(
-            isPassword && "pr-12"
+            "pr-10",
+            error && "border-destructive focus-visible:ring-destructive"
           )}
         />
         
-        {/* Password visibility toggle */}
         {isPassword && (
-          <EnhancedButton
+          <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-accent/50"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
             onClick={() => setShowPassword(!showPassword)}
-            tabIndex={-1}
+            disabled={disabled}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" aria-hidden="true" />
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <Eye className="h-4 w-4" aria-hidden="true" />
+              <Eye className="h-4 w-4 text-muted-foreground" />
             )}
-          </EnhancedButton>
+          </Button>
         )}
         
-        {/* Validation indicator */}
-        {showValidation && value.length > 0 && !isPassword && (
-          <div 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            aria-hidden="true"
-          >
-            {hasError ? (
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            ) : (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            )}
-          </div>
+        {error && !isPassword && (
+          <AlertCircle className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-destructive" />
         )}
       </div>
       
-      {/* Error message */}
-      {hasError && (
-        <div 
-          id={errorId} 
-          className="flex items-start gap-2 text-sm text-destructive"
+      {error && (
+        <p 
+          id={errorId}
+          className="text-sm text-destructive flex items-center gap-1"
           role="alert"
           aria-live="polite"
         >
-          <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
-          <span>{error}</span>
-        </div>
+          <AlertCircle className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+      
+      {config.placeholder && !error && (
+        <p 
+          id={descriptionId}
+          className="text-xs text-muted-foreground"
+        >
+          {getFieldDescription(config)}
+        </p>
       )}
     </div>
   );
+};
+
+const getFieldDescription = (config: FieldConfig): string => {
+  const descriptions: string[] = [];
+  
+  if (config.rules.minLength) {
+    descriptions.push(`Minimum ${config.rules.minLength} characters`);
+  }
+  
+  if (config.rules.maxLength) {
+    descriptions.push(`Maximum ${config.rules.maxLength} characters`);
+  }
+  
+  if (config.rules.strongPassword) {
+    descriptions.push('Must include uppercase, lowercase, number');
+  }
+  
+  if (config.rules.email) {
+    descriptions.push('Valid email format required');
+  }
+  
+  return descriptions.join(', ');
 };

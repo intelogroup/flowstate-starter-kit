@@ -1,157 +1,58 @@
 
 import { useState, useCallback } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-interface ValidationRule {
+export interface ValidationRule {
   required?: boolean;
+  email?: boolean;
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
-  custom?: (value: string) => string | null;
-  email?: boolean;
   strongPassword?: boolean;
+  custom?: (value: string) => string | null;
 }
 
-interface FieldConfig {
+export interface FieldConfig {
   label: string;
-  type?: string;
+  type: string;
   placeholder?: string;
-  rules?: ValidationRule;
+  rules: ValidationRule;
 }
 
-interface FormFieldProps {
-  name: string;
-  config: FieldConfig;
-  value: string;
-  onChange: (value: string) => void;
-  onBlur?: () => void;
-  error?: string;
-  disabled?: boolean;
-  showValidation?: boolean;
+export interface FormConfig<T> {
+  [K in keyof T]: FieldConfig;
 }
 
-export const ValidatedFormField = ({
-  name,
-  config,
-  value,
-  onChange,
-  onBlur,
-  error,
-  disabled,
-  showValidation = true
-}: FormFieldProps) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-
-  const isPassword = config.type === 'password';
-  const hasError = !!error;
-  const isValid = showValidation && !hasError && value.length > 0;
-
-  return (
-    <div className="space-y-2">
-      <Label 
-        htmlFor={name}
-        className={cn(
-          "text-sm font-medium",
-          hasError && "text-destructive",
-          config.rules?.required && "after:content-['*'] after:ml-0.5 after:text-destructive"
-        )}
-      >
-        {config.label}
-      </Label>
-      <div className="relative">
-        <Input
-          id={name}
-          type={isPassword ? (showPassword ? 'text' : 'password') : config.type || 'text'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false);
-            onBlur?.();
-          }}
-          placeholder={config.placeholder}
-          disabled={disabled}
-          className={cn(
-            "transition-colors",
-            hasError && "border-destructive bg-destructive/5 focus:border-destructive focus-visible:ring-destructive",
-            isValid && "border-green-500 bg-green-50 dark:bg-green-950/20",
-            isFocused && !hasError && "border-primary focus-visible:ring-primary"
-          )}
-          aria-invalid={hasError}
-          aria-describedby={hasError ? `${name}-error` : undefined}
-        />
-        
-        {/* Password visibility toggle */}
-        {isPassword && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-            onClick={() => setShowPassword(!showPassword)}
-            tabIndex={-1}
-          >
-            {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-          </Button>
-        )}
-        
-        {/* Validation indicator */}
-        {showValidation && value.length > 0 && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-            {hasError ? (
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            ) : (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            )}
-          </div>
-        )}
-      </div>
-      
-      {/* Error message */}
-      {hasError && (
-        <div id={`${name}-error`} className="flex items-center gap-2 text-sm text-destructive">
-          <AlertTriangle className="h-3 w-3" />
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Validation utility functions
 export const validators = {
   required: (value: string) => 
-    value.trim() ? null : 'This field is required',
-    
-  email: (value: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value) ? null : 'Please enter a valid email address';
-  },
-  
+    !value || value.trim() === '' ? 'This field is required' : null,
+
+  email: (value: string) => 
+    value && !/\S+@\S+\.\S+/.test(value) ? 'Please enter a valid email address' : null,
+
   minLength: (min: number) => (value: string) =>
-    value.length >= min ? null : `Must be at least ${min} characters`,
-    
+    value && value.length < min ? `Must be at least ${min} characters long` : null,
+
+  maxLength: (max: number) => (value: string) =>
+    value && value.length > max ? `Must not exceed ${max} characters` : null,
+
+  pattern: (pattern: RegExp, message: string) => (value: string) =>
+    value && !pattern.test(value) ? message : null,
+
   strongPassword: (value: string) => {
-    if (value.length < 8) return 'Password must be at least 8 characters';
-    if (!/[A-Z]/.test(value)) return 'Password must contain an uppercase letter';
-    if (!/[a-z]/.test(value)) return 'Password must contain a lowercase letter';
-    if (!/\d/.test(value)) return 'Password must contain a number';
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Password must contain a special character';
+    if (!value) return null;
+    if (value.length < 8) return 'Password must be at least 8 characters long';
+    if (!/(?=.*[a-z])/.test(value)) return 'Password must contain at least one lowercase letter';
+    if (!/(?=.*[A-Z])/.test(value)) return 'Password must contain at least one uppercase letter';
+    if (!/(?=.*\d)/.test(value)) return 'Password must contain at least one number';
     return null;
   },
-  
-  confirmPassword: (password: string) => (value: string) =>
-    value === password ? null : 'Passwords do not match'
+
+  confirmPassword: (originalPassword: string) => (value: string) =>
+    value !== originalPassword ? 'Passwords do not match' : null,
 };
 
-// Form validation hook
-export const useFormValidation = <T extends Record<string, any>>(
-  fields: Record<keyof T, FieldConfig>,
+export const useFormValidation = <T extends Record<string, string>>(
+  config: FormConfig<T>,
   initialValues: T
 ) => {
   const [values, setValues] = useState<T>(initialValues);
@@ -159,86 +60,126 @@ export const useFormValidation = <T extends Record<string, any>>(
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateField = useCallback((name: keyof T, value: string): string | null => {
-    const rules = fields[name]?.rules;
-    if (!rules) return null;
+  const validateField = useCallback((fieldName: keyof T, value: string): string | null => {
+    const fieldConfig = config[fieldName];
+    const rules = fieldConfig.rules;
 
-    if (rules.required && validators.required(value)) {
-      return validators.required(value);
+    // Required validation
+    if (rules.required) {
+      const error = validators.required(value);
+      if (error) return error;
     }
 
-    if (rules.email && value && validators.email(value)) {
-      return validators.email(value);
+    // Skip other validations if empty and not required
+    if (!value) return null;
+
+    // Email validation
+    if (rules.email) {
+      const error = validators.email(value);
+      if (error) return error;
     }
 
-    if (rules.minLength && value && validators.minLength(rules.minLength)(value)) {
-      return validators.minLength(rules.minLength)(value);
+    // Length validations
+    if (rules.minLength) {
+      const error = validators.minLength(rules.minLength)(value);
+      if (error) return error;
     }
 
-    if (rules.strongPassword && value && validators.strongPassword(value)) {
-      return validators.strongPassword(value);
+    if (rules.maxLength) {
+      const error = validators.maxLength(rules.maxLength)(value);
+      if (error) return error;
     }
 
-    if (rules.custom && value) {
-      return rules.custom(value);
+    // Pattern validation
+    if (rules.pattern) {
+      const error = validators.pattern(rules.pattern, `Invalid ${fieldConfig.label.toLowerCase()}`)(value);
+      if (error) return error;
+    }
+
+    // Strong password validation
+    if (rules.strongPassword) {
+      const error = validators.strongPassword(value);
+      if (error) return error;
+    }
+
+    // Custom validation
+    if (rules.custom) {
+      const error = rules.custom(value);
+      if (error) return error;
     }
 
     return null;
-  }, [fields]);
+  }, [config]);
 
-  const setValue = useCallback((name: keyof T, value: string) => {
-    setValues(prev => ({ ...prev, [name]: value }));
+  const setValue = useCallback((fieldName: keyof T, value: string) => {
+    setValues(prev => ({ ...prev, [fieldName]: value }));
     
     // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+    if (errors[fieldName]) {
+      setErrors(prev => ({ ...prev, [fieldName]: undefined }));
     }
   }, [errors]);
 
-  const setFieldTouched = useCallback((name: keyof T) => {
-    setTouched(prev => ({ ...prev, [name]: true }));
+  const setFieldTouched = useCallback((fieldName: keyof T) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
     
-    const error = validateField(name, values[name]);
-    setErrors(prev => ({ ...prev, [name]: error || undefined }));
+    // Validate field on blur
+    const error = validateField(fieldName, values[fieldName]);
+    setErrors(prev => ({ ...prev, [fieldName]: error || undefined }));
   }, [validateField, values]);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof T, string>> = {};
     let isValid = true;
 
-    Object.keys(fields).forEach((key) => {
-      const fieldName = key as keyof T;
-      const error = validateField(fieldName, values[fieldName]);
+    Object.keys(config).forEach(fieldName => {
+      const error = validateField(fieldName as keyof T, values[fieldName as keyof T]);
       if (error) {
-        newErrors[fieldName] = error;
+        newErrors[fieldName as keyof T] = error;
         isValid = false;
       }
     });
 
     setErrors(newErrors);
-    setTouched(Object.keys(fields).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+    setTouched(Object.keys(config).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
     
     return isValid;
-  }, [fields, validateField, values]);
+  }, [config, validateField, values]);
 
-  const handleSubmit = useCallback(async (
-    onSubmit: (values: T) => Promise<void> | void,
-    onSuccess?: () => void,
-    onError?: (error: string) => void
-  ) => {
-    setIsSubmitting(true);
-    
-    try {
-      if (validateForm()) {
+  const handleSubmit = useCallback(
+    async (
+      onSubmit: (values: T) => Promise<void>,
+      onSuccess?: () => void,
+      onError?: (error: Error) => void
+    ) => {
+      if (isSubmitting) return;
+
+      setIsSubmitting(true);
+      
+      try {
+        const isValid = validateForm();
+        if (!isValid) {
+          setIsSubmitting(false);
+          return;
+        }
+
         await onSubmit(values);
         onSuccess?.();
+      } catch (error) {
+        onError?.(error as Error);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      onError?.(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [validateForm, values]);
+    },
+    [isSubmitting, validateForm, values]
+  );
+
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setErrors({});
+    setTouched({});
+    setIsSubmitting(false);
+  }, [initialValues]);
 
   return {
     values,
@@ -249,6 +190,6 @@ export const useFormValidation = <T extends Record<string, any>>(
     setFieldTouched,
     validateForm,
     handleSubmit,
-    hasErrors: Object.values(errors).some(error => !!error)
+    reset,
   };
 };

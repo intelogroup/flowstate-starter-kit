@@ -1,146 +1,70 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  AlertTriangle, 
-  Database, 
-  Wifi, 
-  Settings 
-} from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   title: string;
   description: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-    variant?: 'default' | 'outline';
-  };
-  secondaryAction?: {
-    label: string;
-    onClick: () => void;
-  };
+  actionLabel?: string;
+  onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
+  className?: string;
 }
 
-export const EmptyState = ({ 
-  icon: Icon = Database, 
-  title, 
-  description, 
-  action, 
-  secondaryAction 
-}: EmptyStateProps) => (
-  <Card className="w-full">
-    <CardContent className="p-12 text-center">
-      <Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>
-      <div className="space-y-2">
-        {action && (
-          <Button onClick={action.onClick} variant={action.variant || 'default'}>
-            {action.label}
-          </Button>
-        )}
-        {secondaryAction && (
-          <div>
-            <Button onClick={secondaryAction.onClick} variant="outline">
-              {secondaryAction.label}
+export const EmptyState = ({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
+  className = ""
+}: EmptyStateProps) => {
+  return (
+    <Card className={`border-dashed ${className}`}>
+      <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
+        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+          <Icon className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+        <div className="flex gap-3">
+          {actionLabel && onAction && (
+            <Button onClick={onAction}>{actionLabel}</Button>
+          )}
+          {secondaryActionLabel && onSecondaryAction && (
+            <Button variant="outline" onClick={onSecondaryAction}>
+              {secondaryActionLabel}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export const InlineEmptyState = ({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  className = ""
+}: Omit<EmptyStateProps, 'secondaryActionLabel' | 'onSecondaryAction'>) => {
+  return (
+    <div className={`flex flex-col items-center justify-center py-8 px-4 text-center ${className}`}>
+      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
+        <Icon className="w-6 h-6 text-muted-foreground" />
       </div>
-    </CardContent>
-  </Card>
-);
-
-// Predefined empty states
-export const NoAutomationsEmpty = ({ onCreateAutomation }: { onCreateAutomation: () => void }) => (
-  <EmptyState
-    icon={Plus}
-    title="No Automations Yet"
-    description="Get started by creating your first automation. Connect your favorite apps and automate repetitive tasks."
-    action={{
-      label: "Create First Automation",
-      onClick: onCreateAutomation
-    }}
-  />
-);
-
-export const NoSearchResultsEmpty = ({ onClearSearch }: { onClearSearch: () => void }) => (
-  <EmptyState
-    icon={Search}
-    title="No Results Found"
-    description="We couldn't find any automations matching your search criteria. Try adjusting your search terms or filters."
-    action={{
-      label: "Clear Search",
-      onClick: onClearSearch,
-      variant: 'outline'
-    }}
-  />
-);
-
-export const NoFilterResultsEmpty = ({ onClearFilters }: { onClearFilters: () => void }) => (
-  <EmptyState
-    icon={Filter}
-    title="No Matching Automations"
-    description="No automations match your current filter settings. Try broadening your criteria or clear all filters."
-    action={{
-      label: "Clear Filters",
-      onClick: onClearFilters,
-      variant: 'outline'
-    }}
-  />
-);
-
-export const ConnectionErrorEmpty = ({ onRetry }: { onRetry: () => void }) => (
-  <EmptyState
-    icon={Wifi}
-    title="Connection Error"
-    description="Unable to load your automations. Please check your internet connection and try again."
-    action={{
-      label: "Try Again",
-      onClick: onRetry
-    }}
-  />
-);
-
-export const UnauthorizedEmpty = ({ onLogin }: { onLogin: () => void }) => (
-  <EmptyState
-    icon={AlertTriangle}
-    title="Authentication Required"
-    description="Please log in to view and manage your automations."
-    action={{
-      label: "Log In",
-      onClick: onLogin
-    }}
-  />
-);
-
-export const MaintenanceEmpty = () => (
-  <EmptyState
-    icon={Settings}
-    title="Scheduled Maintenance"
-    description="We're performing system maintenance. Your automations are still running, but the dashboard is temporarily unavailable."
-  />
-);
-
-// Inline empty states for smaller sections
-export const InlineEmptyState = ({ 
-  message, 
-  action 
-}: { 
-  message: string; 
-  action?: { label: string; onClick: () => void; } 
-}) => (
-  <div className="text-center py-8 text-muted-foreground">
-    <p className="mb-3">{message}</p>
-    {action && (
-      <Button variant="outline" size="sm" onClick={action.onClick}>
-        {action.label}
-      </Button>
-    )}
-  </div>
-);
+      <h4 className="font-medium text-foreground mb-1">{title}</h4>
+      <p className="text-sm text-muted-foreground mb-4">{description}</p>
+      {actionLabel && onAction && (
+        <Button size="sm" onClick={onAction}>{actionLabel}</Button>
+      )}
+    </div>
+  );
+};

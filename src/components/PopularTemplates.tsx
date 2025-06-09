@@ -4,10 +4,12 @@ import { Mail, MessageSquare, FileSpreadsheet, ArrowRight, Star, Users, Zap } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import LoadingSkeleton from "./LoadingSkeleton";
 
 const PopularTemplates = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   
   const featuredTemplates = [
     {
@@ -54,6 +56,19 @@ const PopularTemplates = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleTemplateClick = (templateId: number) => {
+    navigate(`/template/${templateId}`);
+  };
+
+  const handleUseTemplate = (templateId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/create-flow/${templateId}`);
+  };
+
+  const handleViewAllTemplates = () => {
+    navigate('/templates');
+  };
+
   return (
     <div className="space-y-6">
       {/* Simple Header */}
@@ -79,6 +94,7 @@ const PopularTemplates = () => {
                     ? 'border-primary/20 bg-gradient-to-r from-primary/5 to-transparent' 
                     : 'border-border hover:border-primary/20'
                 }`}
+                onClick={() => handleTemplateClick(template.id)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -128,6 +144,7 @@ const PopularTemplates = () => {
                       <Button 
                         className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                         size="sm"
+                        onClick={(e) => handleUseTemplate(template.id, e)}
                       >
                         <Zap className="w-4 h-4 mr-2" />
                         Use Template
@@ -143,7 +160,7 @@ const PopularTemplates = () => {
           {/* View All Button */}
           <Card className="border-dashed border-2 border-muted-foreground/20 hover:border-primary/40 transition-colors">
             <CardContent className="p-6 text-center">
-              <Button variant="outline" size="lg" className="w-full">
+              <Button variant="outline" size="lg" className="w-full" onClick={handleViewAllTemplates}>
                 <ArrowRight className="w-4 h-4 mr-2" />
                 View All Templates
                 <Badge variant="secondary" className="ml-2">50+ available</Badge>

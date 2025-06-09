@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import FlowDetails from "./components/FlowDetails";
 import FlowWizard from "./components/FlowWizard";
 import TemplatePreview from "./components/TemplatePreview";
+import TemplateLibrary from "./components/TemplateLibrary";
 import FlowsPage from "./pages/FlowsPage";
 import RequestFlowPage from "./pages/RequestFlowPage";
 import { useState, useEffect } from "react";
@@ -47,6 +48,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/flows" element={<FlowsPage />} />
+                  <Route path="/templates" element={<TemplateLibrary />} />
                   <Route path="/flow/:id" element={<FlowDetails />} />
                   <Route path="/create-flow" element={<FlowWizard />} />
                   <Route path="/create-flow/:templateId" element={<FlowWizard />} />

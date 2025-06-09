@@ -89,6 +89,10 @@ const MyAutomations = () => {
     });
   };
 
+  const handleViewAutomationDetails = (automationId: number) => {
+    navigate(`/flow/${automationId}`);
+  };
+
   // Table columns for DataTable component
   const tableColumns = [
     {
@@ -96,7 +100,10 @@ const MyAutomations = () => {
       label: 'Name',
       sortable: true,
       render: (value: string, item: any) => (
-        <div>
+        <div 
+          className="cursor-pointer hover:text-primary"
+          onClick={() => handleViewAutomationDetails(item.id)}
+        >
           <div className="font-medium">{value}</div>
           <div className="text-sm text-muted-foreground">{item.description}</div>
         </div>
@@ -218,17 +225,22 @@ const MyAutomations = () => {
               </div>
             ) : (
               automations.map((automation) => (
-                <AutomationCard
-                  key={automation.id}
-                  automation={automation}
-                  isLoading={loadingAutomations.has(automation.id)}
-                  isActivationModalOpen={activationModal.isOpen}
-                  onToggleAutomation={onToggleAutomation}
-                  onRunAutomation={handleRunAutomation}
-                  onViewError={handleViewError}
-                  onDeleteAutomation={handleDeleteAutomation}
-                  onDuplicateAutomation={handleDuplicateAutomation}
-                />
+                <div 
+                  key={automation.id} 
+                  className="cursor-pointer"
+                  onClick={() => handleViewAutomationDetails(automation.id)}
+                >
+                  <AutomationCard
+                    automation={automation}
+                    isLoading={loadingAutomations.has(automation.id)}
+                    isActivationModalOpen={activationModal.isOpen}
+                    onToggleAutomation={onToggleAutomation}
+                    onRunAutomation={handleRunAutomation}
+                    onViewError={handleViewError}
+                    onDeleteAutomation={handleDeleteAutomation}
+                    onDuplicateAutomation={handleDuplicateAutomation}
+                  />
+                </div>
               ))
             )}
           </div>

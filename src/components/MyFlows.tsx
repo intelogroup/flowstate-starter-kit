@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,10 @@ const MyFlows = () => {
     });
   };
 
+  const handleViewFlowDetails = (flowId: number) => {
+    navigate(`/flow/${flowId}`);
+  };
+
   const handleResolveIssue = (flowId: number) => {
     const flow = flows.find(f => f.id === flowId);
     if (flow) {
@@ -156,27 +161,46 @@ const MyFlows = () => {
       {/* Flows List */}
       <div className="space-y-4">
         {flows.map((flow) => (
-          <FlowCard
-            key={flow.id}
-            flow={flow}
-            onRunFlow={handleRunFlow}
-            onToggleFlow={handleToggleFlow}
-            onSettingsClick={() => handleFlowSettings(flow.id, flow.name)}
-            onResolveIssue={handleResolveIssue}
-            isSelected={selectedFlows.has(flow.id)}
-            onSelect={(selected) => {
-              if (selected) {
-                setSelectedFlows(prev => new Set(prev).add(flow.id));
-              } else {
-                setSelectedFlows(prev => {
-                  const newSet = new Set(prev);
-                  newSet.delete(flow.id);
-                  return newSet;
-                });
-              }
-            }}
-            disabled={loadingFlows.has(flow.id)}
-          />
+          <div 
+            key={flow.id} 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleViewFlowDetails(flow.id)}
+          >
+            <FlowCard
+              flow={flow}
+              onRunFlow={(flowId, flowName) => {
+                // Prevent propagation to avoid double navigation
+                event?.stopPropagation();
+                handleRunFlow(flowId, flowName);
+              }}
+              onToggleFlow={(flowId, newStatus, flowName) => {
+                event?.stopPropagation();
+                handleToggleFlow(flowId, newStatus, flowName);
+              }}
+              onSettingsClick={(flowId, flowName) => {
+                event?.stopPropagation();
+                handleFlowSettings(flowId, flowName);
+              }}
+              onResolveIssue={(flowId) => {
+                event?.stopPropagation();
+                handleResolveIssue(flowId);
+              }}
+              isSelected={selectedFlows.has(flow.id)}
+              onSelect={(selected) => {
+                event?.stopPropagation();
+                if (selected) {
+                  setSelectedFlows(prev => new Set(prev).add(flow.id));
+                } else {
+                  setSelectedFlows(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(flow.id);
+                    return newSet;
+                  });
+                }
+              }}
+              disabled={loadingFlows.has(flow.id)}
+            />
+          </div>
         ))}
       </div>
 

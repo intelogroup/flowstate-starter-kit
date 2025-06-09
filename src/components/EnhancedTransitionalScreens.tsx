@@ -11,26 +11,71 @@ interface FlowStep {
   name: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
   message?: string;
+  duration?: number;
 }
 
 interface EnhancedFlowExecutingScreenProps {
   flowName: string;
-  steps: FlowStep[];
-  currentStepIndex: number;
-  totalSteps: number;
+  steps?: FlowStep[];
+  currentStepIndex?: number;
+  totalSteps?: number;
+  autoProgress?: boolean;
 }
 
 export const EnhancedFlowExecutingScreen = ({ 
   flowName, 
-  steps, 
-  currentStepIndex, 
-  totalSteps 
+  steps: propSteps, 
+  currentStepIndex: propCurrentStepIndex, 
+  totalSteps: propTotalSteps,
+  autoProgress = false
 }: EnhancedFlowExecutingScreenProps) => {
+  // Default steps for Gmail to Drive automation
+  const defaultSteps: FlowStep[] = [
+    { id: '1', name: 'Initializing flow', message: 'Preparing automation engine...', duration: 2000 },
+    { id: '2', name: 'Searching Gmail', message: 'Finding emails matching your criteria...', duration: 3000 },
+    { id: '3', name: 'Processing attachments', message: 'Extracting and organizing files...', duration: 2000 },
+    { id: '4', name: 'Saving to Google Drive', message: 'Uploading files to your designated folder...', duration: 3000 },
+    { id: '5', name: 'Finalizing', message: 'Completing automation and generating summary...', duration: 1000 }
+  ];
+
+  const steps = propSteps || defaultSteps;
+  const [currentStepIndex, setCurrentStepIndex] = useState(propCurrentStepIndex || 0);
   const [progress, setProgress] = useState(0);
+  const [stepStatuses, setStepStatuses] = useState<FlowStep[]>(
+    steps.map((step, index) => ({
+      ...step,
+      status: index === 0 ? 'running' : 'pending'
+    }))
+  );
+
+  const totalSteps = propTotalSteps || steps.length;
 
   useEffect(() => {
-    const newProgress = ((currentStepIndex + 1) / totalSteps) * 100;
-    setProgress(newProgress);
+    if (!autoProgress) return;
+
+    const progressStep = () => {
+      if (currentStepIndex < steps.length) {
+        const currentStep = steps[currentStepIndex];
+        
+        // Mark current step as completed and next as running
+        setTimeout(() => {
+          setStepStatuses(prev => prev.map((step, index) => ({
+            ...step,
+            status: index < currentStepIndex + 1 ? 'completed' : 
+                   index === currentStepIndex + 1 ? 'running' : 'pending'
+          })));
+          
+          setCurrentStepIndex(prev => prev + 1);
+        }, currentStep.duration || 2000);
+      }
+    };
+
+    progressStep();
+  }, [currentStepIndex, autoProgress, steps]);
+
+  useEffect(() => {
+    const newProgress = ((currentStepIndex) / totalSteps) * 100;
+    setProgress(Math.min(newProgress, 100));
   }, [currentStepIndex, totalSteps]);
 
   const getStepIcon = (status: string) => {
@@ -47,11 +92,11 @@ export const EnhancedFlowExecutingScreen = ({
   };
 
   const getCurrentMessage = () => {
-    if (currentStepIndex < steps.length) {
-      const currentStep = steps[currentStepIndex];
-      return currentStep.message || `Step ${currentStepIndex + 1}/${totalSteps} - ${currentStep.name}`;
+    const currentStep = stepStatuses[currentStepIndex];
+    if (currentStep) {
+      return `Step ${currentStepIndex + 1}/${totalSteps} - ${currentStep.message || currentStep.name}`;
     }
-    return "Finalizing...";
+    return currentStepIndex >= totalSteps ? "Flow completed successfully!" : "Processing...";
   };
 
   return (
@@ -73,7 +118,7 @@ export const EnhancedFlowExecutingScreen = ({
       </div>
 
       <div className="w-full space-y-3 mb-6">
-        {steps.map((step, index) => (
+        {stepStatuses.map((step, index) => (
           <div key={step.id} className="flex items-center gap-3 text-left">
             {getStepIcon(step.status)}
             <div className="flex-1">
@@ -85,19 +130,19 @@ export const EnhancedFlowExecutingScreen = ({
               }`}>
                 {step.name}
               </span>
-              {step.message && step.status === 'running' && (
+              {step.status === 'running' && step.message && (
                 <p className="text-xs text-muted-foreground mt-1">{step.message}</p>
               )}
             </div>
-            {index < steps.length - 1 && step.status === 'completed' && (
+            {index < stepStatuses.length - 1 && step.status === 'completed' && (
               <ArrowRight className="w-3 h-3 text-muted-foreground" />
             )}
           </div>
         ))}
       </div>
       
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <div className="flex items-center gap-2 text-sm text-primary font-medium">
+        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
         {getCurrentMessage()}
       </div>
     </div>

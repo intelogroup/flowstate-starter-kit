@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedFlowExecutingScreen } from "./EnhancedTransitionalScreens";
 import DestructiveConfirmationModal from "./DestructiveConfirmationModal";
+import ValidatedFormDemo from "./ValidatedFormDemo";
 
 const FlowExecutionDemo = () => {
   const [isExecuting, setIsExecuting] = useState(false);
@@ -31,13 +32,14 @@ const FlowExecutionDemo = () => {
     <div className="p-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Enhanced Transitional Screens Demo</CardTitle>
+          <CardTitle>Enhanced UI Features Demo</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="space-y-3">
-            <h3 className="font-semibold">Flow Execution with Multi-Step Progress</h3>
+            <h3 className="font-semibold">Enhanced Flow Execution with Multi-Step Progress</h3>
             <p className="text-sm text-muted-foreground">
-              Experience the enhanced flow execution screen with realistic step-by-step progress updates.
+              Experience the enhanced flow execution screen with realistic step-by-step progress updates 
+              and visual status indicators.
             </p>
             <Button onClick={startExecution} className="w-full">
               Run Gmail to Drive Flow
@@ -47,7 +49,8 @@ const FlowExecutionDemo = () => {
           <div className="space-y-3">
             <h3 className="font-semibold">High-Friction Confirmation Modals</h3>
             <p className="text-sm text-muted-foreground">
-              Test the destructive action confirmations that require typing the exact name.
+              Test the destructive action confirmations that require typing the exact name 
+              and show clear consequences.
             </p>
             <div className="flex gap-2">
               <Button 
@@ -68,6 +71,9 @@ const FlowExecutionDemo = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Form Validation Demo */}
+      <ValidatedFormDemo />
 
       <DestructiveConfirmationModal
         open={showDeleteModal}

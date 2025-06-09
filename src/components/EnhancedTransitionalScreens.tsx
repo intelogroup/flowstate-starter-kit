@@ -1,245 +1,168 @@
-
 import { useState, useEffect } from "react";
-import { Loader2, Zap, CheckCircle, AlertTriangle, WifiOff, Clock, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Loader2, Play } from "lucide-react";
 
 interface FlowStep {
   id: string;
   name: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  message?: string;
-  duration?: number;
+  message: string;
+  duration: number;
+  status: 'pending' | 'running' | 'completed';
 }
 
 interface EnhancedFlowExecutingScreenProps {
   flowName: string;
-  steps?: FlowStep[];
-  currentStepIndex?: number;
-  totalSteps?: number;
   autoProgress?: boolean;
 }
 
 export const EnhancedFlowExecutingScreen = ({ 
   flowName, 
-  steps: propSteps, 
-  currentStepIndex: propCurrentStepIndex, 
-  totalSteps: propTotalSteps,
-  autoProgress = false
+  autoProgress = false 
 }: EnhancedFlowExecutingScreenProps) => {
-  // Default steps for Gmail to Drive automation
-  const defaultSteps: FlowStep[] = [
-    { id: '1', name: 'Initializing flow', message: 'Preparing automation engine...', duration: 2000 },
-    { id: '2', name: 'Searching Gmail', message: 'Finding emails matching your criteria...', duration: 3000 },
-    { id: '3', name: 'Processing attachments', message: 'Extracting and organizing files...', duration: 2000 },
-    { id: '4', name: 'Saving to Google Drive', message: 'Uploading files to your designated folder...', duration: 3000 },
-    { id: '5', name: 'Finalizing', message: 'Completing automation and generating summary...', duration: 1000 }
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  const steps: FlowStep[] = [
+    { id: "init", name: "Initialization", message: "Initializing flow...", duration: 2000, status: 'pending' },
+    { id: "search", name: "Gmail Search", message: "Searching your Gmail for matching emails...", duration: 3000, status: 'pending' },
+    { id: "process", name: "File Processing", message: "Processing attachments and extracting data...", duration: 2000, status: 'pending' },
+    { id: "save", name: "Google Drive Save", message: "Saving processed files to Google Drive...", duration: 3000, status: 'pending' },
+    { id: "finalize", name: "Finalization", message: "Finalizing run and updating logs...", duration: 2000, status: 'pending' }
   ];
 
-  const steps = propSteps || defaultSteps;
-  const [currentStepIndex, setCurrentStepIndex] = useState(propCurrentStepIndex || 0);
-  const [progress, setProgress] = useState(0);
-  const [stepStatuses, setStepStatuses] = useState<FlowStep[]>(
-    steps.map((step, index) => ({
-      ...step,
-      status: index === 0 ? 'running' : 'pending'
-    }))
-  );
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
 
-  const totalSteps = propTotalSteps || steps.length;
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!autoProgress) return;
 
-    const progressStep = () => {
-      if (currentStepIndex < steps.length) {
-        const currentStep = steps[currentStepIndex];
-        
-        // Mark current step as completed and next as running
-        setTimeout(() => {
-          setStepStatuses(prev => prev.map((step, index) => ({
-            ...step,
-            status: index < currentStepIndex + 1 ? 'completed' : 
-                   index === currentStepIndex + 1 ? 'running' : 'pending'
-          })));
-          
-          setCurrentStepIndex(prev => prev + 1);
-        }, currentStep.duration || 2000);
+    let totalDuration = 0;
+    let currentDuration = 0;
+
+    const progressTimer = setInterval(() => {
+      const totalTime = steps.reduce((acc, step) => acc + step.duration, 0);
+      currentDuration += 100;
+      
+      // Find current step
+      let stepTime = 0;
+      let stepIndex = 0;
+      for (let i = 0; i < steps.length; i++) {
+        if (currentDuration <= stepTime + steps[i].duration) {
+          stepIndex = i;
+          break;
+        }
+        stepTime += steps[i].duration;
       }
-    };
 
-    progressStep();
-  }, [currentStepIndex, autoProgress, steps]);
+      setCurrentStepIndex(stepIndex);
+      setProgress((currentDuration / totalTime) * 100);
 
-  useEffect(() => {
-    const newProgress = ((currentStepIndex) / totalSteps) * 100;
-    setProgress(Math.min(newProgress, 100));
-  }, [currentStepIndex, totalSteps]);
+      if (currentDuration >= totalTime) {
+        clearInterval(progressTimer);
+      }
+    }, 100);
 
-  const getStepIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'running':
-        return <Loader2 className="w-4 h-4 text-primary animate-spin" />;
-      case 'failed':
-        return <AlertTriangle className="w-4 h-4 text-red-600" />;
-      default:
-        return <Clock className="w-4 h-4 text-muted-foreground" />;
-    }
+    return () => clearInterval(progressTimer);
+  }, [autoProgress]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getCurrentMessage = () => {
-    const currentStep = stepStatuses[currentStepIndex];
-    if (currentStep) {
-      return `Step ${currentStepIndex + 1}/${totalSteps} - ${currentStep.message || currentStep.name}`;
-    }
-    return currentStepIndex >= totalSteps ? "Flow completed successfully!" : "Processing...";
+  const getStepStatus = (stepIndex: number): 'pending' | 'running' | 'completed' => {
+    if (stepIndex < currentStepIndex) return 'completed';
+    if (stepIndex === currentStepIndex) return 'running';
+    return 'pending';
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
-      <div className="relative mb-6">
-        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <Zap className="w-6 h-6 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-      </div>
-      
-      <h3 className="text-xl font-semibold text-foreground mb-2">Executing Flow</h3>
-      <p className="text-muted-foreground mb-6">"{flowName}"</p>
-      
-      <div className="w-full mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium">Progress</span>
-          <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-        </div>
-        <Progress value={progress} className="h-2" />
-      </div>
-
-      <div className="w-full space-y-3 mb-6">
-        {stepStatuses.map((step, index) => (
-          <div key={step.id} className="flex items-center gap-3 text-left">
-            {getStepIcon(step.status)}
-            <div className="flex-1">
-              <span className={`text-sm ${
-                step.status === 'completed' ? 'text-green-600' :
-                step.status === 'running' ? 'text-primary' :
-                step.status === 'failed' ? 'text-red-600' :
-                'text-muted-foreground'
-              }`}>
-                {step.name}
-              </span>
-              {step.status === 'running' && step.message && (
-                <p className="text-xs text-muted-foreground mt-1">{step.message}</p>
-              )}
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <Card className="w-full max-w-2xl">
+        <CardContent className="p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
-            {index < stepStatuses.length - 1 && step.status === 'completed' && (
-              <ArrowRight className="w-3 h-3 text-muted-foreground" />
-            )}
+            <h1 className="text-2xl font-bold text-foreground mb-2">Flow in Progress</h1>
+            <p className="text-muted-foreground">"{flowName}" is currently running</p>
           </div>
-        ))}
-      </div>
-      
-      <div className="flex items-center gap-2 text-sm text-primary font-medium">
-        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-        {getCurrentMessage()}
-      </div>
+
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-foreground">Overall Progress</span>
+              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-muted-foreground">Elapsed: {formatTime(elapsedTime)}</span>
+              <span className="text-xs text-muted-foreground">Step {currentStepIndex + 1} of {steps.length}</span>
+            </div>
+          </div>
+
+          {/* Current Status */}
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
+              <div>
+                <p className="font-medium text-foreground">Status: {steps[currentStepIndex]?.message}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Processing step {currentStepIndex + 1}: {steps[currentStepIndex]?.name}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step List */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Execution Steps</h3>
+            {steps.map((step, index) => {
+              const status = getStepStatus(index);
+              return (
+                <div key={step.id} className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    {status === 'completed' && (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    )}
+                    {status === 'running' && (
+                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    )}
+                    {status === 'pending' && (
+                      <div className="w-5 h-5 border-2 border-muted rounded-full" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium ${
+                      status === 'completed' ? 'text-green-600' :
+                      status === 'running' ? 'text-primary' : 'text-muted-foreground'
+                    }`}>
+                      {step.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{step.message}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t text-center">
+            <p className="text-xs text-muted-foreground">
+              You can safely close this window. We'll notify you when the flow completes.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
-
-export const FlowCompletedWithSummaryScreen = ({ 
-  flowName, 
-  duration, 
-  completedSteps, 
-  results 
-}: { 
-  flowName: string; 
-  duration: string; 
-  completedSteps: number; 
-  results?: { processed: number; successful: number; failed: number; }; 
-}) => (
-  <div className="flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
-    <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-6">
-      <CheckCircle className="w-8 h-8 text-green-600" />
-    </div>
-    <h3 className="text-xl font-semibold text-foreground mb-2">Flow Completed Successfully</h3>
-    <p className="text-muted-foreground mb-4">"{flowName}"</p>
-    
-    <div className="grid grid-cols-2 gap-4 w-full mb-6">
-      <div className="text-center">
-        <div className="text-2xl font-bold text-foreground">{duration}</div>
-        <div className="text-xs text-muted-foreground">Execution Time</div>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl font-bold text-foreground">{completedSteps}</div>
-        <div className="text-xs text-muted-foreground">Steps Completed</div>
-      </div>
-    </div>
-
-    {results && (
-      <div className="w-full">
-        <h4 className="text-sm font-semibold mb-3">Results Summary</h4>
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span>Items processed:</span>
-            <Badge variant="secondary">{results.processed}</Badge>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span>Successful:</span>
-            <Badge variant="outline" className="text-green-600 border-green-600">{results.successful}</Badge>
-          </div>
-          {results.failed > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span>Failed:</span>
-              <Badge variant="outline" className="text-red-600 border-red-600">{results.failed}</Badge>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
-  </div>
-);
-
-export const ConnectionWithDetailsScreen = ({ 
-  serviceName, 
-  status, 
-  permissions 
-}: { 
-  serviceName: string; 
-  status: 'connecting' | 'authorizing' | 'verifying'; 
-  permissions?: string[]; 
-}) => (
-  <div className="flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
-    <Loader2 className="w-12 h-12 animate-spin text-primary mb-6" />
-    <h3 className="text-xl font-semibold text-foreground mb-2">
-      {status === 'connecting' && `Connecting to ${serviceName}`}
-      {status === 'authorizing' && `Authorizing with ${serviceName}`}
-      {status === 'verifying' && `Verifying ${serviceName} connection`}
-    </h3>
-    <p className="text-muted-foreground mb-6">
-      {status === 'connecting' && "Establishing secure connection..."}
-      {status === 'authorizing' && "Please complete authorization in the popup window"}
-      {status === 'verifying' && "Checking permissions and testing connection..."}
-    </p>
-    
-    {permissions && (
-      <div className="w-full">
-        <h4 className="text-sm font-semibold mb-3">Required Permissions</h4>
-        <div className="space-y-2">
-          {permissions.map((permission, index) => (
-            <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="w-3 h-3 text-green-600" />
-              {permission}
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-    
-    <div className="text-sm text-muted-foreground mt-4">
-      This may take a few moments...
-    </div>
-  </div>
-);

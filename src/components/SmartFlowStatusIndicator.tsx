@@ -19,7 +19,7 @@ const SmartFlowStatusIndicator = ({
         icon: Clock,
         color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
         text: 'Paused',
-        dot: 'bg-gray-400'
+        dot: 'bg-gray-500'
       };
     }
 
@@ -57,7 +57,7 @@ const SmartFlowStatusIndicator = ({
           icon: Clock,
           color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
           text: 'Idle',
-          dot: 'bg-gray-400'
+          dot: 'bg-gray-500'
         };
     }
   };

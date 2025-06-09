@@ -1,4 +1,3 @@
-
 import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NoFilterResultsEmpty } from "./EmptyStates";
+import { EmptyState } from "./EmptyStates";
 
 interface AutomationFiltersProps {
   searchTerm: string;
@@ -130,9 +129,15 @@ const AutomationFilters = ({
         </div>
       )}
 
-      {/* No Results State - Use new EmptyState component */}
+      {/* No Results State - Use EmptyState component */}
       {!hasResults && totalAutomations > 0 && (
-        <NoFilterResultsEmpty onClearFilters={onClearFilters} />
+        <EmptyState
+          icon={Search}
+          title="No automations found"
+          description="Try adjusting your search terms or browse different categories"
+          actionLabel="Clear Filters"
+          onAction={onClearFilters}
+        />
       )}
     </>
   );

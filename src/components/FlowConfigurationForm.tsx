@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -299,6 +298,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>Folder Path</Label>
                             <DynamicInput
+                              label="Folder Path"
                               value={action.config.folderPath || ''}
                               onChange={(value) => updateAction(index, 'folderPath', value)}
                               placeholder="/My Files/Backups"
@@ -307,6 +307,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>File Name</Label>
                             <DynamicInput
+                              label="File Name"
                               value={action.config.fileName || ''}
                               onChange={(value) => updateAction(index, 'fileName', value)}
                               placeholder="{{email.subject}}_{{date}}"
@@ -320,6 +321,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>To</Label>
                             <DynamicInput
+                              label="To"
                               value={action.config.to || ''}
                               onChange={(value) => updateAction(index, 'to', value)}
                               placeholder="recipient@example.com"
@@ -328,6 +330,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>Subject</Label>
                             <DynamicInput
+                              label="Subject"
                               value={action.config.subject || ''}
                               onChange={(value) => updateAction(index, 'subject', value)}
                               placeholder="Flow notification: {{trigger.data}}"
@@ -349,6 +352,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>Channel</Label>
                             <DynamicInput
+                              label="Channel"
                               value={action.config.channel || ''}
                               onChange={(value) => updateAction(index, 'channel', value)}
                               placeholder="#general"
@@ -357,6 +361,7 @@ const FlowConfigurationForm = () => {
                           <div className="space-y-2">
                             <Label>Message</Label>
                             <DynamicInput
+                              label="Message"
                               value={action.config.message || ''}
                               onChange={(value) => updateAction(index, 'message', value)}
                               placeholder="New email received: {{email.subject}}"

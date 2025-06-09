@@ -6,6 +6,7 @@ import RecentActivityCard from "./RecentActivityCard";
 import PopularTemplates from "./PopularTemplates";
 import ActiveFlowsSection from "./ActiveFlowsSection";
 import NotificationBanner from "./NotificationBanner";
+import DashboardEmptyState from "./DashboardEmptyState";
 import { Button } from "@/components/ui/button";
 import { Code, BarChart3, Filter } from "lucide-react";
 import AsyncOperationsShowcase from "./AsyncOperationsShowcase";
@@ -16,6 +17,11 @@ interface EnhancedDashboardProps {
 
 const EnhancedDashboard = ({ onNavigate }: EnhancedDashboardProps) => {
   const [showAsyncDemo, setShowAsyncDemo] = useState(false);
+
+  // Mock data - in real app this would come from Supabase
+  // For demo purposes, set to empty array to show empty state
+  const userFlows: any[] = [];
+  const hasFlows = userFlows.length > 0;
 
   const handleMetricClick = (metricId: string) => {
     console.log(`Navigating to analytics with filter: ${metricId}`);
@@ -68,6 +74,12 @@ const EnhancedDashboard = ({ onNavigate }: EnhancedDashboardProps) => {
     );
   }
 
+  // Show empty state if user has no flows
+  if (!hasFlows) {
+    return <DashboardEmptyState />;
+  }
+
+  // Show full dashboard for users with flows
   return (
     <div className="p-6 space-y-8 bg-background">
       {/* Enhanced Header with Global Search */}

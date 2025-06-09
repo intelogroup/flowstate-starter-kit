@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Mail, MessageSquare, FileSpreadsheet, ArrowRight, Star, Users, Zap, TrendingUp } from "lucide-react";
+import { Mail, MessageSquare, FileSpreadsheet, ArrowRight, Star, Users, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import LoadingSkeleton from "./LoadingSkeleton";
 
@@ -56,27 +56,10 @@ const PopularTemplates = () => {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/70 rounded-lg flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">Most Popular Templates</h2>
-        </div>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Join thousands of users automating their workflows with these proven templates
-        </p>
-        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            <span>3.6K+ active users</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span>4.7 avg rating</span>
-          </div>
-        </div>
+      {/* Simple Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Popular Templates</h2>
+        <p className="text-muted-foreground">Get started quickly with these proven automations</p>
       </div>
       
       {isLoading ? (
@@ -115,18 +98,10 @@ const PopularTemplates = () => {
                       </div>
                     </div>
 
-                    {/* Badges */}
-                    <div className="flex items-center gap-2">
-                      {template.trending && (
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                          <TrendingUp className="w-3 h-3 mr-1" />
-                          Trending
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className="border-primary/20">
-                        {template.category}
-                      </Badge>
-                    </div>
+                    {/* Category Badge */}
+                    <Badge variant="outline" className="border-primary/20">
+                      {template.category}
+                    </Badge>
                   </div>
                   
                   <div className="space-y-3">

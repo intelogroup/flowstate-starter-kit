@@ -1,5 +1,4 @@
 
-import QuickStats from "./QuickStats";
 import RecentActivityCard from "./RecentActivityCard";
 import PopularTemplates from "./PopularTemplates";
 import ActiveFlowsSection from "./ActiveFlowsSection";
@@ -51,21 +50,13 @@ const Dashboard = () => {
       {/* Notification Banner */}
       <NotificationBanner />
 
-      {/* Quick Stats */}
-      <QuickStats />
+      {/* Popular Templates - Now prominently at the top */}
+      <PopularTemplates />
 
-      {/* Main Content Grid - Updated Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left Column - Popular Templates (More Prominent) */}
-        <div className="xl:col-span-2 space-y-6">
-          <PopularTemplates />
-        </div>
-
-        {/* Right Column - Activity */}
-        <div className="space-y-6">
-          <ActiveFlowsSection />
-          <RecentActivityCard />
-        </div>
+      {/* Secondary Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ActiveFlowsSection />
+        <RecentActivityCard />
       </div>
     </div>
   );

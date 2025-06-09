@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ValidatedFormField, useFormValidation, validators } from './FormValidation';
+import { AccessibleFormField } from './AccessibleFormField';
+import { useFormValidation, validators } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { User, Mail, Lock, Shield, Loader2 } from 'lucide-react';
 
 interface RegistrationFormData {
   fullName: string;
@@ -98,16 +98,16 @@ export const RegistrationForm = ({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold text-center">
+    <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-2xl font-semibold text-center tracking-tight">
           Create your account
         </CardTitle>
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
           Enter your information to get started
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -117,9 +117,10 @@ export const RegistrationForm = ({
               (error) => console.error('Registration failed:', error)
             );
           }}
-          className="space-y-4"
+          className="space-y-5"
+          noValidate
         >
-          <ValidatedFormField
+          <AccessibleFormField
             name="fullName"
             config={fieldConfigs.fullName}
             value={values.fullName}
@@ -129,7 +130,7 @@ export const RegistrationForm = ({
             disabled={isSubmitting}
           />
 
-          <ValidatedFormField
+          <AccessibleFormField
             name="email"
             config={fieldConfigs.email}
             value={values.email}
@@ -139,7 +140,7 @@ export const RegistrationForm = ({
             disabled={isSubmitting}
           />
 
-          <ValidatedFormField
+          <AccessibleFormField
             name="password"
             config={fieldConfigs.password}
             value={values.password}
@@ -149,7 +150,7 @@ export const RegistrationForm = ({
             disabled={isSubmitting}
           />
 
-          <ValidatedFormField
+          <AccessibleFormField
             name="confirmPassword"
             config={fieldConfigs.confirmPassword}
             value={values.confirmPassword}
@@ -159,35 +160,30 @@ export const RegistrationForm = ({
             disabled={isSubmitting}
           />
 
-          <Button
+          <EnhancedButton
             type="submit"
             className="w-full"
+            loading={isSubmitting}
+            loadingText="Creating account..."
             disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              'Create account'
-            )}
-          </Button>
+            Create account
+          </EnhancedButton>
 
-          <div className="text-center">
+          <div className="text-center pt-4 border-t border-border/50">
             <span className="text-sm text-muted-foreground">
               Already have an account?{' '}
             </span>
-            <Button
+            <EnhancedButton
               type="button"
               variant="link"
               size="sm"
               onClick={onLoginRedirect}
-              className="px-0 text-sm"
+              className="px-0 text-sm h-auto"
               disabled={isSubmitting}
             >
               Sign in
-            </Button>
+            </EnhancedButton>
           </div>
         </form>
       </CardContent>

@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ValidatedFormField, useFormValidation, validators } from './FormValidation';
+import { AccessibleFormField } from './AccessibleFormField';
+import { useFormValidation, validators } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 
 interface LoginFormData {
   email: string;
@@ -76,16 +76,16 @@ export const LoginForm = ({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold text-center">
+    <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-2xl font-semibold text-center tracking-tight">
           Welcome back
         </CardTitle>
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
           Enter your credentials to access your account
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -95,9 +95,10 @@ export const LoginForm = ({
               (error) => console.error('Login failed:', error)
             );
           }}
-          className="space-y-4"
+          className="space-y-5"
+          noValidate
         >
-          <ValidatedFormField
+          <AccessibleFormField
             name="email"
             config={fieldConfigs.email}
             value={values.email}
@@ -107,7 +108,7 @@ export const LoginForm = ({
             disabled={isSubmitting}
           />
 
-          <ValidatedFormField
+          <AccessibleFormField
             name="password"
             config={fieldConfigs.password}
             value={values.password}
@@ -117,48 +118,43 @@ export const LoginForm = ({
             disabled={isSubmitting}
           />
 
-          <div className="flex items-center justify-between">
-            <Button
+          <div className="flex items-center justify-between pt-2">
+            <EnhancedButton
               type="button"
               variant="link"
               size="sm"
               onClick={onForgotPassword}
-              className="px-0 text-sm"
+              className="px-0 text-sm h-auto"
               disabled={isSubmitting}
             >
               Forgot password?
-            </Button>
+            </EnhancedButton>
           </div>
 
-          <Button
+          <EnhancedButton
             type="submit"
             className="w-full"
+            loading={isSubmitting}
+            loadingText="Signing in..."
             disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              'Sign in'
-            )}
-          </Button>
+            Sign in
+          </EnhancedButton>
 
-          <div className="text-center">
+          <div className="text-center pt-4 border-t border-border/50">
             <span className="text-sm text-muted-foreground">
               Don't have an account?{' '}
             </span>
-            <Button
+            <EnhancedButton
               type="button"
               variant="link"
               size="sm"
               onClick={onSignUpRedirect}
-              className="px-0 text-sm"
+              className="px-0 text-sm h-auto"
               disabled={isSubmitting}
             >
               Sign up
-            </Button>
+            </EnhancedButton>
           </div>
         </form>
       </CardContent>

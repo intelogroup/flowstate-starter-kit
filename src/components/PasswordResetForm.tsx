@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ValidatedFormField, useFormValidation } from './FormValidation';
+import { AccessibleFormField } from './AccessibleFormField';
+import { useFormValidation } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 
 interface PasswordResetFormData {
   email: string;
@@ -67,39 +68,40 @@ export const PasswordResetForm = ({
 
   if (isEmailSent) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="space-y-1 text-center">
+      <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+        <CardHeader className="space-y-1 text-center pb-6">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CheckCircle className="w-8 h-8 text-green-600" aria-hidden="true" />
           </div>
-          <CardTitle className="text-2xl font-semibold">
+          <CardTitle className="text-2xl font-semibold tracking-tight">
             Check your email
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            We've sent password reset instructions to {values.email}
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We've sent password reset instructions to{' '}
+            <span className="font-medium text-foreground">{values.email}</span>
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
+          <EnhancedButton
             type="button"
             variant="outline"
             className="w-full"
             onClick={onBackToLogin}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to login
-          </Button>
+          </EnhancedButton>
           
-          <div className="text-center">
-            <Button
+          <div className="text-center pt-2">
+            <EnhancedButton
               type="button"
               variant="link"
               size="sm"
               onClick={() => setIsEmailSent(false)}
-              className="text-sm"
+              className="text-sm h-auto"
             >
               Didn't receive the email? Try again
-            </Button>
+            </EnhancedButton>
           </div>
         </CardContent>
       </Card>
@@ -107,16 +109,16 @@ export const PasswordResetForm = ({
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold text-center">
+    <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-2xl font-semibold text-center tracking-tight">
           Reset your password
         </CardTitle>
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
           Enter your email address and we'll send you a link to reset your password
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -126,9 +128,10 @@ export const PasswordResetForm = ({
               (error) => console.error('Password reset failed:', error)
             );
           }}
-          className="space-y-4"
+          className="space-y-5"
+          noValidate
         >
-          <ValidatedFormField
+          <AccessibleFormField
             name="email"
             config={fieldConfigs.email}
             value={values.email}
@@ -138,31 +141,26 @@ export const PasswordResetForm = ({
             disabled={isSubmitting}
           />
 
-          <Button
+          <EnhancedButton
             type="submit"
             className="w-full"
+            loading={isSubmitting}
+            loadingText="Sending..."
             disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              'Send reset link'
-            )}
-          </Button>
+            Send reset link
+          </EnhancedButton>
 
-          <Button
+          <EnhancedButton
             type="button"
             variant="outline"
             className="w-full"
             onClick={onBackToLogin}
             disabled={isSubmitting}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to login
-          </Button>
+          </EnhancedButton>
         </form>
       </CardContent>
     </Card>

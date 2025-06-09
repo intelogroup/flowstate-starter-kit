@@ -10,6 +10,7 @@ export interface Automation {
   executions: number;
   successRate: number;
   lastRun: string;
+  createdAt: string;
 }
 
 export interface PaginationConfig {
@@ -39,6 +40,7 @@ const mockAutomations: Automation[] = [
     executions: 120,
     successRate: 95,
     lastRun: '2024-05-03 17:00',
+    createdAt: '2024-04-15 10:30',
   },
   {
     id: 2,
@@ -49,6 +51,7 @@ const mockAutomations: Automation[] = [
     executions: 300,
     successRate: 99,
     lastRun: '2024-05-04 09:30',
+    createdAt: '2024-04-10 14:20',
   },
   {
     id: 3,
@@ -59,6 +62,7 @@ const mockAutomations: Automation[] = [
     executions: 50,
     successRate: 80,
     lastRun: '2024-05-02 14:45',
+    createdAt: '2024-04-20 09:15',
   },
   {
     id: 4,
@@ -69,6 +73,7 @@ const mockAutomations: Automation[] = [
     executions: 80,
     successRate: 65,
     lastRun: '2024-05-04 11:00',
+    createdAt: '2024-04-18 16:45',
   },
   {
     id: 5,
@@ -79,6 +84,7 @@ const mockAutomations: Automation[] = [
     executions: 60,
     successRate: 92,
     lastRun: '2024-05-06 09:00',
+    createdAt: '2024-04-12 11:30',
   },
   {
     id: 6,
@@ -89,6 +95,7 @@ const mockAutomations: Automation[] = [
     executions: 40,
     successRate: 75,
     lastRun: '2024-05-01 16:20',
+    createdAt: '2024-04-25 13:10',
   },
   {
     id: 7,
@@ -99,6 +106,7 @@ const mockAutomations: Automation[] = [
     executions: 200,
     successRate: 98,
     lastRun: '2024-05-05 13:15',
+    createdAt: '2024-04-08 08:45',
   },
   {
     id: 8,
@@ -109,6 +117,7 @@ const mockAutomations: Automation[] = [
     executions: 150,
     successRate: 90,
     lastRun: '2024-05-03 10:00',
+    createdAt: '2024-04-22 15:20',
   },
   {
     id: 9,
@@ -119,6 +128,7 @@ const mockAutomations: Automation[] = [
     executions: 100,
     successRate: 70,
     lastRun: '2024-05-04 06:00',
+    createdAt: '2024-04-14 12:00',
   },
   {
     id: 10,
@@ -129,6 +139,7 @@ const mockAutomations: Automation[] = [
     executions: 250,
     successRate: 96,
     lastRun: '2024-05-05 18:40',
+    createdAt: '2024-04-16 10:15',
   },
 ];
 

@@ -1,21 +1,70 @@
 
-import ActiveFlowsSection from "./ActiveFlowsSection";
-import PopularTemplates from "./PopularTemplates";
+import QuickStats from "./QuickStats";
 import RecentActivityCard from "./RecentActivityCard";
-import AttentionRequiredCard from "./AttentionRequiredCard";
+import PopularTemplates from "./PopularTemplates";
+import ActiveFlowsSection from "./ActiveFlowsSection";
+import NotificationBanner from "./NotificationBanner";
+import AsyncOperationsShowcase from "./AsyncOperationsShowcase";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Code, BarChart3 } from "lucide-react";
 
 const Dashboard = () => {
+  const [showAsyncDemo, setShowAsyncDemo] = useState(false);
+
+  if (showAsyncDemo) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4">
+          <h2 className="text-xl font-semibold">Async Operations Demo</h2>
+          <Button
+            variant="outline"
+            onClick={() => setShowAsyncDemo(false)}
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+        <AsyncOperationsShowcase />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 bg-background">
+      {/* Header with Demo Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back! Here's what's happening with your flows.</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowAsyncDemo(true)}
+          className="gap-2"
+        >
+          <Code className="w-4 h-4" />
+          View Async Demo
+        </Button>
+      </div>
+
+      {/* Notification Banner */}
+      <NotificationBanner />
+
+      {/* Quick Stats */}
+      <QuickStats />
+
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Recent Activity */}
         <div className="lg:col-span-2 space-y-6">
           <ActiveFlowsSection />
-          <PopularTemplates />
-        </div>
-        
-        <div className="space-y-6">
-          <AttentionRequiredCard />
           <RecentActivityCard />
+        </div>
+
+        {/* Right Column - Templates */}
+        <div className="space-y-6">
+          <PopularTemplates />
         </div>
       </div>
     </div>

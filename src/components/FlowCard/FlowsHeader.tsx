@@ -12,7 +12,7 @@ interface FlowsHeaderProps {
   onDisconnectService: () => void;
 }
 
-export const FlowsHeader = ({ 
+const FlowsHeader = ({ 
   searchQuery, 
   statusFilter, 
   onSearchChange, 
@@ -69,3 +69,5 @@ export const FlowsHeader = ({
     </>
   );
 };
+
+export default FlowsHeader;

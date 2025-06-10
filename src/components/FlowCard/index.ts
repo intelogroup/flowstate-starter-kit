@@ -1,3 +1,3 @@
 
-export { FlowCard } from './FlowCard';
-export { FlowsHeader } from './FlowsHeader';
+export { default as FlowCard } from './FlowCard';
+export { default as FlowsHeader } from './FlowsHeader';

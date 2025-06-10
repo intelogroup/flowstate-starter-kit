@@ -31,7 +31,7 @@ interface FlowCardProps {
   onToggleStatus: (flowId: number) => void;
 }
 
-export const FlowCard = ({ 
+const FlowCard = ({ 
   flow, 
   onFlowClick, 
   onEditFlow, 
@@ -124,3 +124,5 @@ export const FlowCard = ({
     </Card>
   );
 };
+
+export default FlowCard;

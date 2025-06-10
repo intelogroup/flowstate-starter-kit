@@ -14,6 +14,7 @@ export interface Automation {
   totalRuns: number;
   createdAt: string;
   updatedAt: string;
+  error?: string;
 }
 
 export interface AutomationTrigger {
@@ -23,7 +24,7 @@ export interface AutomationTrigger {
 
 export interface AutomationAction {
   id: string;
-  type: 'email' | 'webhook' | 'database' | 'file_operation' | 'notification';
+  type: 'email' | 'webhook' | 'database' | 'file_operation' | 'notification' | 'save-to-drive';
   config: Record<string, any>;
   order: number;
 }

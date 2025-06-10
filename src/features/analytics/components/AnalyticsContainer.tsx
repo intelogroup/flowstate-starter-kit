@@ -6,16 +6,17 @@ import AnalyticsChart from "./AnalyticsChart";
 import AnalyticsMetrics from "./AnalyticsMetrics";
 import { useAnalyticsData } from "../hooks/useAnalyticsData";
 import { LoadingSpinner } from "@/shared/components";
+import { AnalyticsFilters as AnalyticsFiltersType } from "../types";
 
 interface AnalyticsContainerProps {
   initialFilter?: string;
 }
 
 const AnalyticsContainer = ({ initialFilter }: AnalyticsContainerProps) => {
-  const [filters, setFilters] = useState({
-    dateRange: 'month' as const,
-    flowType: initialFilter || 'all' as const,
-    metric: 'executions' as const
+  const [filters, setFilters] = useState<AnalyticsFiltersType>({
+    dateRange: 'month',
+    flowType: (initialFilter as any) || 'all',
+    metric: 'executions'
   });
 
   const { data, metrics, isLoading } = useAnalyticsData(filters);

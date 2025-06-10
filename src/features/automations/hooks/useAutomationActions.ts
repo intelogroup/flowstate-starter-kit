@@ -4,7 +4,7 @@ import { automationService } from '../services/automationService';
 import { toast } from '@/hooks/use-toast';
 
 export const useAutomationActions = () => {
-  const { toggleAutomationStatus, deleteAutomation as removeFromStore } = useAutomationStore();
+  const { toggleAutomationStatus, deleteAutomation: removeFromStore } = useAutomationStore();
 
   const handleToggleStatus = async (id: string | number) => {
     try {

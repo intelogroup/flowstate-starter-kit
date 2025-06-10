@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useAutomationStore } from '@/shared/stores/useAutomationStore';
 import { useAutomationFilters } from '../hooks/useAutomationFilters';
+import { useAutomationActions } from '../hooks/useAutomationActions';
 import { automationService } from '../services/automationService';
 import AutomationStats from './AutomationStats';
 import AutomationsList from './AutomationsList';
@@ -15,9 +16,7 @@ const AutomationContainer = () => {
     stats, 
     isLoading, 
     setAutomations, 
-    setLoading, 
-    toggleAutomationStatus,
-    deleteAutomation 
+    setLoading 
   } = useAutomationStore();
 
   const {
@@ -29,6 +28,13 @@ const AutomationContainer = () => {
     handleTriggerFilterChange,
     clearFilters,
   } = useAutomationFilters();
+
+  const {
+    handleToggleStatus,
+    handleDelete,
+    handleRetry,
+    handleReconnect,
+  } = useAutomationActions();
 
   useEffect(() => {
     const loadAutomations = async () => {
@@ -51,33 +57,9 @@ const AutomationContainer = () => {
     loadAutomations();
   }, [setAutomations, setLoading]);
 
-  const handleToggle = (id: string | number) => {
-    toggleAutomationStatus(id);
-    toast({
-      title: "Status Updated",
-      description: "Automation status has been updated.",
-    });
-  };
-
   const handleSettings = (id: string | number) => {
     console.log('Opening settings for automation:', id);
     // TODO: Implement settings modal
-  };
-
-  const handleRetry = (id: string | number) => {
-    console.log('Retrying automation:', id);
-    toast({
-      title: "Retrying",
-      description: "Automation is being retried.",
-    });
-  };
-
-  const handleReconnect = (id: string | number) => {
-    console.log('Reconnecting automation:', id);
-    toast({
-      title: "Reconnecting",
-      description: "Attempting to reconnect the service.",
-    });
   };
 
   if (isLoading) {
@@ -109,7 +91,7 @@ const AutomationContainer = () => {
 
       <AutomationsList
         automations={filteredAutomations}
-        onToggle={handleToggle}
+        onToggle={handleToggleStatus}
         onSettings={handleSettings}
         onRetry={handleRetry}
         onReconnect={handleReconnect}

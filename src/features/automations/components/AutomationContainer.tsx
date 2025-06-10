@@ -7,7 +7,7 @@ import { automationService } from '../services/automationService';
 import AutomationStats from './AutomationStats';
 import AutomationsList from './AutomationsList';
 import AutomationFilters from '@/components/AutomationFilters';
-import { LoadingSkeleton } from '@/components/LoadingSkeleton';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { toast } from '@/hooks/use-toast';
 
 const AutomationContainer = () => {

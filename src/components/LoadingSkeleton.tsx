@@ -1,13 +1,36 @@
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface LoadingSkeletonProps {
-  type: 'cards' | 'table' | 'list' | 'dashboard' | 'templates' | 'flows' | 'activity';
+  type: 'cards' | 'table' | 'list' | 'dashboard' | 'templates' | 'flows' | 'activity' | 'page-header' | 'filters';
   count?: number;
 }
 
 const LoadingSkeleton = ({ type, count = 3 }: LoadingSkeletonProps) => {
+  if (type === 'page-header') {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'filters') {
+    return (
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-10 flex-1 max-w-md" />
+        <Skeleton className="h-10 w-32" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+    );
+  }
+
   if (type === 'templates') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

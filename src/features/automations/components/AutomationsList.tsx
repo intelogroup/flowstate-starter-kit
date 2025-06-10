@@ -48,7 +48,7 @@ const AutomationsList = ({
         // Transform automation to match FlowCardWithErrorHandling expected format
         const transformedFlow = {
           ...automation,
-          id: typeof automation.id === 'string' ? parseInt(automation.id) || automation.id : automation.id,
+          id: typeof automation.id === 'string' ? parseInt(automation.id) || 1 : automation.id,
           createdAt: automation.createdAt,
           error: automation.error ? {
             type: automation.error.type,
@@ -60,7 +60,7 @@ const AutomationsList = ({
         return (
           <FlowCardWithErrorHandling
             key={automation.id}
-            flow={transformedFlow}
+            flow={transformedFlow as any}
             onToggle={onToggle}
             onSettings={onSettings}
             onRetry={onRetry}

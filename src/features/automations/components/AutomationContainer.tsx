@@ -65,7 +65,7 @@ const AutomationContainer = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <LoadingSkeleton type="stats" />
+        <LoadingSkeleton type="dashboard" />
         <LoadingSkeleton type="filters" />
         <LoadingSkeleton type="list" />
       </div>

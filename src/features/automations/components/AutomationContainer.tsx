@@ -95,7 +95,7 @@ const AutomationContainer = () => {
         onSettings={handleSettings}
         onRetry={handleRetry}
         onReconnect={handleReconnect}
-        hasFilters={hasActiveFilters}
+        hasFilters={Boolean(hasActiveFilters)}
         onClearFilters={clearFilters}
       />
     </div>

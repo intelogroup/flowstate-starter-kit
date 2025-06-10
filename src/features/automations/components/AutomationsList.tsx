@@ -44,16 +44,30 @@ const AutomationsList = ({
 
   return (
     <div className="space-y-4">
-      {automations.map((automation) => (
-        <FlowCardWithErrorHandling
-          key={automation.id}
-          flow={automation}
-          onToggle={onToggle}
-          onSettings={onSettings}
-          onRetry={onRetry}
-          onReconnect={onReconnect}
-        />
-      ))}
+      {automations.map((automation) => {
+        // Transform automation to match FlowCardWithErrorHandling expected format
+        const transformedFlow = {
+          ...automation,
+          id: typeof automation.id === 'string' ? parseInt(automation.id) || automation.id : automation.id,
+          createdAt: automation.createdAt,
+          error: automation.error ? {
+            type: automation.error.type,
+            message: automation.error.message,
+            actionRequired: automation.error.actionRequired
+          } : undefined
+        };
+
+        return (
+          <FlowCardWithErrorHandling
+            key={automation.id}
+            flow={transformedFlow}
+            onToggle={onToggle}
+            onSettings={onSettings}
+            onRetry={onRetry}
+            onReconnect={onReconnect}
+          />
+        );
+      })}
     </div>
   );
 };

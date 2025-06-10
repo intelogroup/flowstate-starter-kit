@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { Automation, AutomationFilters, AutomationStats } from '../types/automation';
+import { Status } from '../types/common';
 
 interface AutomationState {
   automations: Automation[];
@@ -67,7 +68,7 @@ export const useAutomationStore = create<AutomationState & AutomationActions>()(
       toggleAutomationStatus: (id) => {
         const automations = get().automations.map(automation => {
           if (automation.id === id) {
-            const newStatus = automation.status === 'active' ? 'paused' : 'active';
+            const newStatus: Status = automation.status === 'active' ? 'paused' : 'active';
             return { ...automation, status: newStatus };
           }
           return automation;

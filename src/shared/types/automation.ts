@@ -1,40 +1,37 @@
 
-import { BaseEntity, Status } from './common';
+import { Status } from './common';
 
-export interface Automation extends BaseEntity {
+export interface Automation {
+  id: string | number;
   name: string;
   description: string;
   status: Status;
-  lastRun: string;
-  runsToday: number;
-  successRate: number;
-  tags: string[];
   trigger: AutomationTrigger;
   actions: AutomationAction[];
-  error?: AutomationError;
+  successRate: number;
+  lastRun?: string;
+  nextRun?: string;
+  totalRuns: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AutomationTrigger {
-  type: string;
+  type: 'webhook' | 'schedule' | 'email' | 'file_upload' | 'database_change';
   config: Record<string, any>;
 }
 
 export interface AutomationAction {
-  type: string;
+  id: string;
+  type: 'email' | 'webhook' | 'database' | 'file_operation' | 'notification';
   config: Record<string, any>;
-}
-
-export interface AutomationError {
-  type: 'connection' | 'execution' | 'configuration';
-  message: string;
-  actionRequired: boolean;
-  timestamp: string;
+  order: number;
 }
 
 export interface AutomationFilters {
   searchTerm: string;
-  statusFilter: string;
-  triggerFilter: string;
+  statusFilter: Status | 'all';
+  triggerFilter: AutomationTrigger['type'] | 'all';
 }
 
 export interface AutomationStats {

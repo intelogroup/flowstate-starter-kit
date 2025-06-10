@@ -1,32 +1,23 @@
 
-export const AUTOMATION_STATUS = {
-  ACTIVE: 'active',
-  PAUSED: 'paused',
-  ERROR: 'error',
-  DRAFT: 'draft'
-} as const;
+export const AUTOMATION_STATUSES = [
+  { value: 'active', label: 'Active', color: 'green' },
+  { value: 'paused', label: 'Paused', color: 'yellow' },
+  { value: 'error', label: 'Error', color: 'red' },
+  { value: 'draft', label: 'Draft', color: 'gray' },
+] as const;
 
-export const AUTOMATION_TRIGGERS = {
-  GMAIL_NEW_EMAIL: 'gmail-new-email',
-  GOOGLE_DRIVE_NEW_FILE: 'google-drive-new-file',
-  CALENDAR_EVENT: 'calendar-event',
-  WEBHOOK: 'webhook'
-} as const;
+export const TRIGGER_TYPES = [
+  { value: 'webhook', label: 'Webhook', icon: 'Globe' },
+  { value: 'schedule', label: 'Schedule', icon: 'Clock' },
+  { value: 'email', label: 'Email', icon: 'Mail' },
+  { value: 'file_upload', label: 'File Upload', icon: 'Upload' },
+  { value: 'database_change', label: 'Database Change', icon: 'Database' },
+] as const;
 
-export const AUTOMATION_ACTIONS = {
-  SAVE_TO_DRIVE: 'save-to-drive',
-  SEND_EMAIL: 'send-email',
-  CREATE_CALENDAR_EVENT: 'create-calendar-event',
-  SEND_SLACK_MESSAGE: 'send-slack-message'
-} as const;
-
-export const DEFAULT_PAGINATION = {
-  page: 1,
-  limit: 10
-} as const;
-
-export const REFRESH_INTERVALS = {
-  AUTOMATIONS: 30000, // 30 seconds
-  ANALYTICS: 60000,   // 1 minute
-  NOTIFICATIONS: 15000 // 15 seconds
-} as const;
+export const ACTION_TYPES = [
+  { value: 'email', label: 'Send Email', icon: 'Mail' },
+  { value: 'webhook', label: 'Call Webhook', icon: 'Globe' },
+  { value: 'database', label: 'Database Operation', icon: 'Database' },
+  { value: 'file_operation', label: 'File Operation', icon: 'FileText' },
+  { value: 'notification', label: 'Send Notification', icon: 'Bell' },
+] as const;

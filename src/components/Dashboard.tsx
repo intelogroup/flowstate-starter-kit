@@ -1,12 +1,12 @@
 
-import EnhancedDashboard from "./EnhancedDashboard";
+import { DashboardContainer } from "@/features/dashboard";
 
 interface DashboardProps {
-  onNavigate?: (section: string, filter?: string) => void;
+  onNavigate: (section: string, filter?: string) => void;
 }
 
 const Dashboard = ({ onNavigate }: DashboardProps) => {
-  return <EnhancedDashboard onNavigate={onNavigate} />;
+  return <DashboardContainer />;
 };
 
 export default Dashboard;

@@ -11,11 +11,15 @@ export const automationService = {
         description: 'Automatically extract data from invoices and save to spreadsheet',
         status: 'active',
         lastRun: '2 hours ago',
-        runsToday: 12,
         successRate: 98.5,
-        tags: ['finance', 'automation'],
+        totalRuns: 45,
         trigger: { type: 'email', config: {} },
-        actions: [{ type: 'save-to-drive', config: {} }],
+        actions: [{ 
+          id: 'action1', 
+          type: 'save-to-drive', 
+          config: {}, 
+          order: 1 
+        }],
         createdAt: '2024-01-15',
         updatedAt: '2024-01-15'
       },
@@ -25,11 +29,15 @@ export const automationService = {
         description: 'Save email attachments to Google Drive automatically',
         status: 'error',
         lastRun: '1 day ago',
-        runsToday: 0,
         successRate: 0,
-        tags: ['email', 'storage'],
+        totalRuns: 12,
         trigger: { type: 'email', config: {} },
-        actions: [{ type: 'save-to-drive', config: {} }],
+        actions: [{ 
+          id: 'action2', 
+          type: 'save-to-drive', 
+          config: {}, 
+          order: 1 
+        }],
         error: {
           type: 'connection',
           message: 'Unable to connect to Google Drive. Please reconnect your account.',

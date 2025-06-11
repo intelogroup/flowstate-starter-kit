@@ -14,7 +14,14 @@ export interface Automation {
   totalRuns: number;
   createdAt: string;
   updatedAt: string;
-  error?: string;
+  error?: AutomationError;
+}
+
+export interface AutomationError {
+  type: string;
+  message: string;
+  actionRequired: boolean;
+  timestamp?: string;
 }
 
 export interface AutomationTrigger {

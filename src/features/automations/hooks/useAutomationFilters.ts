@@ -2,6 +2,8 @@
 import { useMemo } from 'react';
 import { useAutomationStore } from '@/shared/stores/useAutomationStore';
 import { useDebounce } from '@/shared/utils/performance';
+import { Status } from '@/shared/types/common';
+import { AutomationTrigger } from '@/shared/types/automation';
 
 export const useAutomationFilters = () => {
   const { filters, updateFilters, clearFilters } = useAutomationStore();
@@ -15,11 +17,11 @@ export const useAutomationFilters = () => {
   };
 
   const handleStatusFilterChange = (statusFilter: string) => {
-    updateFilters({ statusFilter });
+    updateFilters({ statusFilter: statusFilter as Status | 'all' });
   };
 
   const handleTriggerFilterChange = (triggerFilter: string) => {
-    updateFilters({ triggerFilter });
+    updateFilters({ triggerFilter: triggerFilter as AutomationTrigger['type'] | 'all' });
   };
 
   const uniqueTriggers = useMemo(() => {

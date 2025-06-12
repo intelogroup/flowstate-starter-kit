@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccessibleFormField } from './AccessibleFormField';
-import { useFormValidation, validators } from './FormValidation';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
+import { secureAuthService } from '@/shared/services/secureAuthService';
+import { secureValidation } from '@/shared/utils/secureValidation';
 
 interface LoginFormData {
   email: string;
@@ -23,55 +24,118 @@ export const LoginForm = ({
   onSignUpRedirect 
 }: LoginFormProps) => {
   const { addAlert } = useEnhancedAlerts();
+  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
+  const [errors, setErrors] = useState<Partial<LoginFormData>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof LoginFormData, boolean>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fieldConfigs = {
     email: {
       label: 'Email',
       type: 'email',
       placeholder: 'Enter your email address',
-      rules: {
-        required: true,
-        email: true
-      }
+      rules: { required: true, email: true }
     },
     password: {
       label: 'Password',
       type: 'password',
       placeholder: 'Enter your password',
-      rules: {
-        required: true,
-        minLength: 6
-      }
+      rules: { required: true, minLength: 6 }
     }
   };
 
-  const {
-    values,
-    errors,
-    touched,
-    isSubmitting,
-    setValue,
-    setFieldTouched,
-    handleSubmit
-  } = useFormValidation<LoginFormData>(fieldConfigs, {
-    email: '',
-    password: ''
-  });
+  const validateField = (fieldName: keyof LoginFormData, value: string) => {
+    let validation;
+    
+    switch (fieldName) {
+      case 'email':
+        validation = secureValidation.validateEmail(value);
+        break;
+      case 'password':
+        validation = secureValidation.validateRequired(value, 'Password');
+        break;
+      default:
+        return null;
+    }
 
-  const handleLogin = async (formData: LoginFormData) => {
-    // This will be connected to Supabase auth
-    console.log('Login attempt with:', { email: formData.email });
+    return validation.isValid ? null : validation.errors[0];
+  };
+
+  const handleFieldChange = (fieldName: keyof LoginFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Clear error when user starts typing
+    if (errors[fieldName]) {
+      setErrors(prev => ({ ...prev, [fieldName]: undefined }));
+    }
+  };
+
+  const handleFieldBlur = (fieldName: keyof LoginFormData) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
     
-    // Simulate success/error for demo
-    if (formData.email === 'demo@example.com' && formData.password === 'password') {
+    const error = validateField(fieldName, formData[fieldName]);
+    setErrors(prev => ({ ...prev, [fieldName]: error || undefined }));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<LoginFormData> = {};
+    let isValid = true;
+
+    (Object.keys(formData) as Array<keyof LoginFormData>).forEach(fieldName => {
+      const error = validateField(fieldName, formData[fieldName]);
+      if (error) {
+        newErrors[fieldName] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    setTouched({ email: true, password: true });
+
+    return isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+
+    // Rate limiting check
+    if (!secureValidation.checkRateLimit('login', formData.email, 5, 15 * 60 * 1000)) {
+      addAlert({
+        type: 'error',
+        title: 'Too Many Attempts',
+        message: 'Too many login attempts. Please try again in 15 minutes.',
+        source: 'security'
+      });
+      return;
+    }
+
+    if (!validateForm()) {
+      addAlert({
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please fix the errors and try again',
+        source: 'validation'
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const user = await secureAuthService.login({
+        email: formData.email,
+        password: formData.password
+      });
+
       addAlert(supabaseAlertHelpers.authSuccess('Login'));
-      onSuccess?.({ email: formData.email });
-    } else {
-      addAlert(supabaseAlertHelpers.authError('Login', 'Invalid email or password'));
-      throw new Error('Invalid credentials');
+      onSuccess?.(user);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      addAlert(supabaseAlertHelpers.authError('Login', errorMessage));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,24 +150,13 @@ export const LoginForm = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit(
-              handleLogin,
-              () => console.log('Login successful'),
-              (error) => console.error('Login failed:', error)
-            );
-          }}
-          className="space-y-5"
-          noValidate
-        >
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <AccessibleFormField
             name="email"
             config={fieldConfigs.email}
-            value={values.email}
-            onChange={(value) => setValue('email', value)}
-            onBlur={() => setFieldTouched('email')}
+            value={formData.email}
+            onChange={(value) => handleFieldChange('email', value)}
+            onBlur={() => handleFieldBlur('email')}
             error={touched.email ? errors.email : undefined}
             disabled={isSubmitting}
           />
@@ -111,9 +164,9 @@ export const LoginForm = ({
           <AccessibleFormField
             name="password"
             config={fieldConfigs.password}
-            value={values.password}
-            onChange={(value) => setValue('password', value)}
-            onBlur={() => setFieldTouched('password')}
+            value={formData.password}
+            onChange={(value) => handleFieldChange('password', value)}
+            onBlur={() => handleFieldBlur('password')}
             error={touched.password ? errors.password : undefined}
             disabled={isSubmitting}
           />

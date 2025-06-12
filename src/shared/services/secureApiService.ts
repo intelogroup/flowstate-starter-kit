@@ -49,8 +49,16 @@ class SecureApiService {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest', // CSRF protection
-        ...requestOptions.headers,
       };
+
+      // Add custom headers from options
+      if (requestOptions.headers) {
+        Object.entries(requestOptions.headers).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            headers[key] = value;
+          }
+        });
+      }
 
       // Add authentication headers if required
       if (requireAuth) {

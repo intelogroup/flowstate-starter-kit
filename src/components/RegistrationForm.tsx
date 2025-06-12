@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -187,7 +186,7 @@ export const RegistrationForm = ({
         type: 'error',
         title: 'Too Many Attempts',
         message: 'Too many signup attempts. Please try again in 1 hour.',
-        source: 'security'
+        source: 'validation'
       });
       return;
     }

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,7 +105,7 @@ export const LoginForm = ({
         type: 'error',
         title: 'Too Many Attempts',
         message: 'Too many login attempts. Please try again in 15 minutes.',
-        source: 'security'
+        source: 'validation'
       });
       return;
     }

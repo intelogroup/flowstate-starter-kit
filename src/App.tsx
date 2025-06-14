@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
+import TodoPage from "./pages/TodoPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { AlertProvider } from "./components/AlertSystem";
@@ -26,6 +27,11 @@ function App() {
             <Route path="/app" element={
               <ProtectedRoute>
                 <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/todos" element={
+              <ProtectedRoute>
+                <TodoPage />
               </ProtectedRoute>
             } />
             <Route path="/create-flow" element={

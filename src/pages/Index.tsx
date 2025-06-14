@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
@@ -69,6 +68,8 @@ const Index = () => {
         return <MyAutomations />;
       case "flows":
         return <MyFlows />;
+      case "todos":
+        return <TodoPage />;
       case "analytics":
         return <Analytics initialFilter={analyticsFilter} />;
       case "notifications":

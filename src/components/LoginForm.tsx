@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccessibleFormField } from './AccessibleFormField';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { secureAuthService } from '@/shared/services/secureAuthService';
+import { supabaseAuthService } from '@/shared/services/supabaseAuthService';
 import { secureValidation } from '@/shared/utils/secureValidation';
 
 interface LoginFormData {
@@ -123,7 +124,7 @@ export const LoginForm = ({
     setIsSubmitting(true);
 
     try {
-      const user = await secureAuthService.login({
+      const user = await supabaseAuthService.login({
         email: formData.email,
         password: formData.password
       });
@@ -145,7 +146,7 @@ export const LoginForm = ({
           Welcome back
         </CardTitle>
         <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          Enter your credentials to access your account
+          Enter your credentials to access your FlowState account
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

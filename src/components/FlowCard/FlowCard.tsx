@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-interface Flow {
-  id: number;
+interface FlowCardFlow {
+  id: string;
   name: string;
   description: string;
   status: string;
@@ -23,12 +23,12 @@ interface Flow {
 }
 
 interface FlowCardProps {
-  flow: Flow;
-  onFlowClick: (flowId: number) => void;
-  onEditFlow: (flowId: number, flowName: string) => void;
-  onDeleteFlow: (flowId: number, flowName: string) => void;
-  onDuplicateFlow: (flowId: number, flowName: string) => void;
-  onToggleStatus: (flowId: number) => void;
+  flow: FlowCardFlow;
+  onFlowClick: (flowId: string) => void;
+  onEditFlow: (flowId: string, flowName: string) => void;
+  onDeleteFlow: (flowId: string, flowName: string) => void;
+  onDuplicateFlow: (flowId: string, flowName: string) => void;
+  onToggleStatus: (flowId: string) => void;
 }
 
 const FlowCard = ({ 

@@ -1,43 +1,26 @@
 
 import { useState } from "react";
-import { Flow, FlowsManagementState } from "../types";
+import { useFlowsData } from "./useFlowsData";
+import { Flow } from "@/shared/services/supabaseFlowService";
 
 export const useFlowsManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-  const [selectedFlow, setSelectedFlow] = useState<{ id: number; name: string } | null>(null);
+  const [selectedFlow, setSelectedFlow] = useState<{ id: string; name: string } | null>(null);
 
-  const flows: Flow[] = [
-    {
-      id: 1,
-      name: "Email to Drive Backup",
-      description: "Automatically save email attachments to Google Drive",
-      status: "active",
-      lastRun: "2 hours ago",
-      totalRuns: 45,
-      successRate: 98
-    },
-    {
-      id: 2,
-      name: "Slack Notifications",
-      description: "Send important updates to team Slack channel",
-      status: "paused",
-      lastRun: "1 day ago",
-      totalRuns: 23,
-      successRate: 100
-    },
-    {
-      id: 3,
-      name: "Data Sync Process",
-      description: "Synchronize data between different platforms",
-      status: "error",
-      lastRun: "3 hours ago",
-      totalRuns: 12,
-      successRate: 85
-    }
-  ];
+  const {
+    flows,
+    isLoading,
+    error,
+    deleteFlow,
+    duplicateFlow,
+    toggleStatus,
+    isDeleting,
+    isDuplicating,
+    isTogglingStatus
+  } = useFlowsData();
 
   const filteredFlows = flows.filter(flow => {
     const matchesSearch = flow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,26 +29,27 @@ export const useFlowsManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleEditFlow = (flowId: number, flowName: string) => {
+  const handleEditFlow = (flowId: string, flowName: string) => {
     console.log(`Editing flow ${flowId}: ${flowName}`);
+    // TODO: Navigate to flow editor
   };
 
-  const handleDeleteFlow = (flowId: number, flowName: string) => {
+  const handleDeleteFlow = (flowId: string, flowName: string) => {
     setSelectedFlow({ id: flowId, name: flowName });
     setShowDeleteModal(true);
   };
 
-  const handleDuplicateFlow = (flowId: number, flowName: string) => {
-    console.log(`Duplicating flow ${flowId}: ${flowName}`);
+  const handleDuplicateFlow = (flowId: string, flowName: string) => {
+    duplicateFlow(flowId);
   };
 
-  const handleToggleStatus = (flowId: number) => {
-    console.log(`Toggling status for flow ${flowId}`);
+  const handleToggleStatus = (flowId: string) => {
+    toggleStatus(flowId);
   };
 
   const confirmDeleteFlow = () => {
     if (selectedFlow) {
-      console.log(`Deleting flow ${selectedFlow.id}: ${selectedFlow.name}`);
+      deleteFlow(selectedFlow.id);
     }
     setShowDeleteModal(false);
     setSelectedFlow(null);
@@ -87,11 +71,17 @@ export const useFlowsManagement = () => {
     setShowDisconnectModal,
     selectedFlow,
     filteredFlows,
+    flows,
+    isLoading,
+    error,
     handleEditFlow,
     handleDeleteFlow,
     handleDuplicateFlow,
     handleToggleStatus,
     confirmDeleteFlow,
     confirmDisconnectService,
+    isDeleting,
+    isDuplicating,
+    isTogglingStatus
   };
 };

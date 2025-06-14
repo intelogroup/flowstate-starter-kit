@@ -18,6 +18,8 @@ const FlowsContainer = () => {
     setShowDisconnectModal,
     selectedFlow,
     filteredFlows,
+    isLoading,
+    error,
     handleEditFlow,
     handleDeleteFlow,
     handleDuplicateFlow,
@@ -26,7 +28,7 @@ const FlowsContainer = () => {
     confirmDisconnectService,
   } = useFlowsManagement();
 
-  const handleFlowClick = (flowId: number) => {
+  const handleFlowClick = (flowId: string) => {
     navigate(`/flow/${flowId}`);
   };
 
@@ -53,6 +55,8 @@ const FlowsContainer = () => {
           onDeleteFlow={handleDeleteFlow}
           onDuplicateFlow={handleDuplicateFlow}
           onToggleStatus={handleToggleStatus}
+          isLoading={isLoading}
+          error={error}
         />
       </div>
 

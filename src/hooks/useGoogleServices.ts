@@ -23,7 +23,7 @@ export const useGoogleServices = () => {
         type: 'error',
         title: 'Connection Error',
         message: 'Failed to check Google service status',
-        source: 'google'
+        source: 'network'
       });
     } finally {
       setIsLoading(false);
@@ -38,7 +38,7 @@ export const useGoogleServices = () => {
         type: 'success',
         title: 'Connection Initiated',
         message: 'Google authentication started...',
-        source: 'google'
+        source: 'general'
       });
       
       // Refresh status after a delay (for development simulation)
@@ -53,7 +53,7 @@ export const useGoogleServices = () => {
         type: 'error',
         title: 'Connection Failed',
         message: 'Failed to connect to Google services',
-        source: 'google'
+        source: 'network'
       });
       setIsConnecting(false);
     }
@@ -67,7 +67,7 @@ export const useGoogleServices = () => {
         type: 'success',
         title: 'Disconnected',
         message: 'Google services disconnected successfully',
-        source: 'google'
+        source: 'general'
       });
     } catch (error) {
       console.error('Error disconnecting from Google:', error);
@@ -75,7 +75,7 @@ export const useGoogleServices = () => {
         type: 'error',
         title: 'Disconnection Failed',
         message: 'Failed to disconnect from Google services',
-        source: 'google'
+        source: 'network'
       });
     }
   };

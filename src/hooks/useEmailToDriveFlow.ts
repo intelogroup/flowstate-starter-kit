@@ -19,14 +19,14 @@ export const useEmailToDriveFlow = () => {
           type: 'success',
           title: 'Flow Executed',
           message: `Processed ${result.emailsProcessed} emails, saved ${result.filesSaved} files`,
-          source: 'flow-execution'
+          source: 'general'
         });
       } else {
         addAlert({
           type: 'error',
           title: 'Flow Failed',
           message: `Execution failed with ${result.errors.length} errors`,
-          source: 'flow-execution'
+          source: 'general'
         });
       }
       
@@ -47,7 +47,7 @@ export const useEmailToDriveFlow = () => {
         type: 'error',
         title: 'Execution Error',
         message: 'Failed to execute Email to Drive flow',
-        source: 'flow-execution'
+        source: 'general'
       });
       
       return errorResult;

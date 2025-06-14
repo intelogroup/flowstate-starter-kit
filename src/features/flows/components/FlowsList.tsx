@@ -1,8 +1,8 @@
 
 import { Flow } from "@/shared/services/supabaseFlowService";
-import { FlowCard } from "@/components/FlowCard";
-import { LoadingSkeleton } from "@/components/LoadingSkeleton";
-import { EmptyState } from "@/components/EmptyState";
+import FlowCard from "./FlowCard";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
+import EmptyState from "@/components/EmptyState";
 import { Card, CardContent } from "@/components/ui/card";
 import { Workflow, AlertCircle } from "lucide-react";
 
@@ -30,13 +30,7 @@ const FlowsList = ({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].map((_, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <LoadingSkeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
-        ))}
+        <LoadingSkeleton type="flows" count={3} />
       </div>
     );
   }
@@ -60,7 +54,7 @@ const FlowsList = ({
   if (flows.length === 0) {
     return (
       <EmptyState
-        icon={Workflow}
+        type="flows"
         title="No flows found"
         description="Create your first automation flow to get started"
         actionLabel="Create Flow"
@@ -74,15 +68,7 @@ const FlowsList = ({
       {flows.map((flow) => (
         <FlowCard
           key={flow.id}
-          flow={{
-            id: flow.id,
-            name: flow.name,
-            description: flow.description,
-            status: flow.status,
-            lastRun: flow.last_run || 'Never',
-            totalRuns: flow.total_runs,
-            successRate: flow.success_rate
-          }}
+          flow={flow}
           onFlowClick={onFlowClick}
           onEditFlow={onEditFlow}
           onDeleteFlow={onDeleteFlow}

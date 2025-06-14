@@ -11,10 +11,15 @@ import {
   Copy
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Flow, FlowActions } from "../types";
+import { Flow } from "@/shared/services/supabaseFlowService";
 
-interface FlowCardProps extends FlowActions {
+interface FlowCardProps {
   flow: Flow;
+  onFlowClick: (flowId: string) => void;
+  onEditFlow: (flowId: string, flowName: string) => void;
+  onDeleteFlow: (flowId: string, flowName: string) => void;
+  onDuplicateFlow: (flowId: string, flowName: string) => void;
+  onToggleStatus: (flowId: string) => void;
 }
 
 const FlowCard = ({ 
@@ -61,9 +66,9 @@ const FlowCard = ({
               </div>
               <p className="text-muted-foreground mb-3">{flow.description}</p>
               <div className="flex gap-6 text-sm text-muted-foreground">
-                <span>Last run: {flow.lastRun}</span>
-                <span>Total runs: {flow.totalRuns}</span>
-                <span>Success rate: {flow.successRate}%</span>
+                <span>Last run: {flow.last_run || 'Never'}</span>
+                <span>Total runs: {flow.total_runs || 0}</span>
+                <span>Success rate: {flow.success_rate || 0}%</span>
               </div>
             </div>
           </div>

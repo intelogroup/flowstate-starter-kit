@@ -15,6 +15,7 @@ import PrivacyPolicy from "@/components/PrivacyPolicy";
 import { UserProfile } from "@/components/UserProfile";
 import { PageLoading } from "@/components/LoadingStates";
 import { supabaseAuthService } from "@/shared/services/supabaseAuthService";
+import TodoPage from "./TodoPage";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");

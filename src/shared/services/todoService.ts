@@ -1,5 +1,4 @@
-
-import { TodoItem, TodoPhase } from '@/types/todo';
+import { TodoItem, TodoPhase, TodoFilters } from '@/types/todo';
 
 class TodoService {
   private storageKey = 'flowstate_todos';

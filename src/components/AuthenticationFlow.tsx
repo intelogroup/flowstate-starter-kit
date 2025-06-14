@@ -1,9 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
 import { RegistrationForm } from './RegistrationForm';
 import { PasswordResetForm } from './PasswordResetForm';
 import { AuthTestIndicator } from './AuthTestIndicator';
+import { supabaseAuthService } from '@/shared/services/supabaseAuthService';
 
 type AuthView = 'login' | 'register' | 'reset-password';
 
@@ -19,10 +21,24 @@ export const AuthenticationFlow = ({
   className = "" 
 }: AuthenticationFlowProps) => {
   const [currentView, setCurrentView] = useState<AuthView>(initialView);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If user is already authenticated, redirect to app
+    if (supabaseAuthService.isAuthenticated()) {
+      navigate('/app');
+    }
+  }, [navigate]);
 
   const handleAuthSuccess = (user: any) => {
     console.log('TEST-001: Authentication successful in flow:', user);
-    onAuthSuccess?.(user);
+    
+    if (onAuthSuccess) {
+      onAuthSuccess(user);
+    } else {
+      // Default behavior: redirect to app
+      navigate('/app');
+    }
   };
 
   return (

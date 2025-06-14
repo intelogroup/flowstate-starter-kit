@@ -1,5 +1,8 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { AlertProvider } from "./components/AlertSystem";
 import { EnhancedAlertProvider } from "./components/EnhancedAlertSystem";
@@ -12,14 +15,34 @@ function App() {
       <AlertProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/create-flow" element={<FlowWizard />} />
-            <Route path="/create-flow/:templateId" element={<FlowWizard />} />
-            <Route path="/template/:templateId" element={<FlowWizard />} />
-            <Route path="/auth" element={<AuthenticationFlow />} />
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AuthenticationFlow initialView="login" />} />
             <Route path="/register" element={<AuthenticationFlow initialView="register" />} />
             <Route path="/reset-password" element={<AuthenticationFlow initialView="reset-password" />} />
+            <Route path="/auth" element={<AuthenticationFlow />} />
+            
+            {/* Protected routes */}
+            <Route path="/app" element={
+              <ProtectedRoute>
+                <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/create-flow" element={
+              <ProtectedRoute>
+                <FlowWizard />
+              </ProtectedRoute>
+            } />
+            <Route path="/create-flow/:templateId" element={
+              <ProtectedRoute>
+                <FlowWizard />
+              </ProtectedRoute>
+            } />
+            <Route path="/template/:templateId" element={
+              <ProtectedRoute>
+                <FlowWizard />
+              </ProtectedRoute>
+            } />
           </Routes>
           <Toaster />
         </Router>

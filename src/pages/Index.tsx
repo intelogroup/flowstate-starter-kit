@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
@@ -12,6 +13,7 @@ import HelpSupport from "@/components/HelpSupport";
 import Settings from "@/components/Settings";
 import Documentation from "@/components/Documentation";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
+import TodoPage from "@/pages/TodoPage";
 import { UserProfile } from "@/components/UserProfile";
 import { PageLoading } from "@/components/LoadingStates";
 import { supabaseAuthService } from "@/shared/services/supabaseAuthService";

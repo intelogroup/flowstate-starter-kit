@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccessibleFormField } from './AccessibleFormField';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
-import { secureAuthService } from '@/shared/services/secureAuthService';
+import { supabaseAuthService } from '@/shared/services/supabaseAuthService';
 import { secureValidation } from '@/shared/utils/secureValidation';
 
 interface RegistrationFormData {
@@ -180,6 +181,8 @@ export const RegistrationForm = ({
     
     if (isSubmitting) return;
 
+    console.log('TEST-001: Registration form submitted with:', { email: formData.email, fullName: formData.fullName });
+
     // Rate limiting check
     if (!secureValidation.checkRateLimit('signup', formData.email, 3, 60 * 60 * 1000)) {
       addAlert({
@@ -204,15 +207,19 @@ export const RegistrationForm = ({
     setIsSubmitting(true);
 
     try {
-      const user = await secureAuthService.signup({
-        name: formData.fullName,
+      console.log('TEST-001: Attempting Supabase signup...');
+      const user = await supabaseAuthService.signup({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        firstName: formData.fullName.split(' ')[0],
+        lastName: formData.fullName.split(' ').slice(1).join(' ')
       });
 
+      console.log('TEST-001: Signup successful:', user);
       addAlert(supabaseAlertHelpers.authSuccess('Registration'));
       onSuccess?.(user);
     } catch (error) {
+      console.error('TEST-001: Signup error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       addAlert(supabaseAlertHelpers.authError('Registration', errorMessage));
     } finally {

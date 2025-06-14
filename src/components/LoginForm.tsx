@@ -100,6 +100,8 @@ export const LoginForm = ({
     
     if (isSubmitting) return;
 
+    console.log('TEST-001: Login form submitted with:', { email: formData.email });
+
     // Rate limiting check
     if (!secureValidation.checkRateLimit('login', formData.email, 5, 15 * 60 * 1000)) {
       addAlert({
@@ -124,14 +126,17 @@ export const LoginForm = ({
     setIsSubmitting(true);
 
     try {
+      console.log('TEST-001: Attempting Supabase login...');
       const user = await supabaseAuthService.login({
         email: formData.email,
         password: formData.password
       });
 
+      console.log('TEST-001: Login successful:', user);
       addAlert(supabaseAlertHelpers.authSuccess('Login'));
       onSuccess?.(user);
     } catch (error) {
+      console.error('TEST-001: Login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       addAlert(supabaseAlertHelpers.authError('Login', errorMessage));
     } finally {

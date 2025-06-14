@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Left side - Brand */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">Flowstate</span>
+            <span className="text-sm font-medium text-foreground">FlowState</span>
             <span className="text-xs text-muted-foreground">
               © 2024 All rights reserved
             </span>

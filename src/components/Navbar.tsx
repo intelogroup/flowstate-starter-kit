@@ -63,7 +63,7 @@ const Navbar = ({ onSectionChange }: NavbarProps) => {
   return (
     <div className="h-16 bg-background border-b border-border flex items-center justify-between px-6">
       <div className="flex items-center">
-        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+        <h1 className="text-xl font-semibold text-foreground">FlowState Dashboard</h1>
       </div>
       
       <div className="flex items-center gap-4">

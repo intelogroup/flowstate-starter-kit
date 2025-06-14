@@ -91,14 +91,14 @@ const EmailToDriveForm = ({
     setFormData(prev => ({ ...prev, [field]: value }));
     if (field in fieldConfigs) {
       const fieldProps = getFieldProps(field);
-      fieldProps.onChange(value);
+      fieldProps.onChange(String(value));
     }
   };
 
   const handleInputBlur = (field: keyof EmailToDriveFormData) => {
     if (field in fieldConfigs) {
       const fieldProps = getFieldProps(field);
-      fieldProps.onBlur(formData[field]);
+      fieldProps.onBlur(String(formData[field]));
     }
   };
 

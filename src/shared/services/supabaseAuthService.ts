@@ -68,6 +68,26 @@ class SupabaseAuthService {
     }
   }
 
+  async signInWithGoogle(): Promise<void> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log('Google OAuth initiated');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw error;
+    }
+  }
+
   async signup(credentials: SignupCredentials): Promise<User> {
     try {
       const { data, error } = await supabase.auth.signUp({

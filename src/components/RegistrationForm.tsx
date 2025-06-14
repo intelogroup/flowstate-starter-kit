@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccessibleFormField } from './AccessibleFormField';
+import { GoogleSignInButton } from './GoogleSignInButton';
 import { useEnhancedAlerts, supabaseAlertHelpers } from './EnhancedAlertSystem';
 import { supabaseAuthService } from '@/shared/services/supabaseAuthService';
 import { secureValidation } from '@/shared/utils/secureValidation';
@@ -246,6 +246,22 @@ export const RegistrationForm = ({
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        <GoogleSignInButton 
+          text="Sign up with Google" 
+          disabled={isSubmitting} 
+        />
+        
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <AccessibleFormField
             name="fullName"

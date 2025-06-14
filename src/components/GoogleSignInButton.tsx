@@ -31,7 +31,7 @@ export const GoogleSignInButton = ({
         type: 'info',
         title: 'Redirecting',
         message: 'Redirecting to Google for authentication...',
-        source: 'auth'
+        source: 'supabase'
       });
     } catch (error) {
       console.error('Google sign-in error:', error);

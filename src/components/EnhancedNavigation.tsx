@@ -193,7 +193,7 @@ const EnhancedNavigation = ({ activeSection, onSectionChange }: EnhancedNavigati
             <Workflow className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-semibold text-foreground">AutoFlow</h2>
+            <h2 className="font-semibold text-foreground">FlowState</h2>
             <p className="text-xs text-muted-foreground">Automation Platform</p>
           </div>
         </div>
@@ -205,7 +205,7 @@ const EnhancedNavigation = ({ activeSection, onSectionChange }: EnhancedNavigati
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <div className="text-xs text-blue-800 dark:text-blue-200">
-              <p className="font-medium mb-1">New to AutoFlow?</p>
+              <p className="font-medium mb-1">New to FlowState?</p>
               <p><strong>My Flows:</strong> Your custom automations</p>
               <p><strong>Flow Library:</strong> Ready-to-use templates</p>
             </div>

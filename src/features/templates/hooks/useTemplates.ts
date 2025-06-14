@@ -47,11 +47,11 @@ export const useTemplates = (filters: any) => {
 
         setTemplates([
           {
-            id: '1',
+            id: 'email-to-drive',
             name: 'Email to Google Drive',
-            description: 'Automatically save email attachments to Google Drive',
+            description: 'Automatically save email attachments to Google Drive with smart filtering and organization',
             category: 'email',
-            tags: ['email', 'google-drive', 'automation'],
+            tags: ['email', 'google-drive', 'automation', 'attachments'],
             difficulty: 'beginner',
             estimatedTime: '10 min',
             usageCount: 1240,

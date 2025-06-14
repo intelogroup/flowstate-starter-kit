@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import Dashboard from "@/components/Dashboard";
@@ -14,11 +15,13 @@ import Documentation from "@/components/Documentation";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
 import { UserProfile } from "@/components/UserProfile";
 import { PageLoading } from "@/components/LoadingStates";
+import { supabaseAuthService } from "@/shared/services/supabaseAuthService";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [analyticsFilter, setAnalyticsFilter] = useState<string | undefined>();
+  const navigate = useNavigate();
 
   // Handle section transitions with loading states
   const handleSectionChange = (newSection: string, filter?: string) => {
@@ -36,6 +39,20 @@ const Index = () => {
         setIsTransitioning(false);
       }, 500);
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabaseAuthService.logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handlePasswordChange = () => {
+    // Navigate to password reset flow
+    navigate('/reset-password');
   };
 
   const renderContent = () => {
@@ -68,9 +85,9 @@ const Index = () => {
         return (
           <div className="container mx-auto p-6 max-w-4xl">
             <UserProfile
-              onLogout={() => console.log('User logged out')}
+              onLogout={handleLogout}
               onSettingsClick={() => handleSectionChange('settings')}
-              onPasswordChange={() => console.log('Password change requested')}
+              onPasswordChange={handlePasswordChange}
             />
           </div>
         );

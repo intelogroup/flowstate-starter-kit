@@ -1,25 +1,21 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import NotificationCenter from "./NotificationCenter";
 import UserProfileDropdown from "./UserProfileDropdown";
 import { EnhancedButton } from "@/components/ui/enhanced-button";
 import { Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabaseAuthService } from "@/shared/services/supabaseAuthService";
 
 interface NavbarProps {
   onSectionChange?: (section: string) => void;
 }
 
 const Navbar = ({ onSectionChange }: NavbarProps) => {
-  const [user] = useState({
-    id: "1",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    avatarUrl: "/placeholder.svg",
-    plan: "free" as const
-  });
+  const navigate = useNavigate();
+  const [user] = useState(supabaseAuthService.getCurrentUser());
 
   const handleProfileClick = () => {
     onSectionChange?.("profile");
@@ -53,11 +49,38 @@ const Navbar = ({ onSectionChange }: NavbarProps) => {
     });
   };
 
-  const handleLogout = () => {
-    toast({
-      title: "Signed Out",
-      description: "You have been successfully signed out.",
-    });
+  const handleLogout = async () => {
+    try {
+      await supabaseAuthService.logout();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const displayUser = user ? {
+    id: user.id,
+    firstName: user.user_metadata?.first_name || user.email?.split('@')[0] || 'User',
+    lastName: user.user_metadata?.last_name || '',
+    email: user.email || '',
+    avatarUrl: user.user_metadata?.avatar_url,
+    plan: 'free' as const
+  } : {
+    id: "1",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    avatarUrl: "/placeholder.svg",
+    plan: "free" as const
   };
 
   return (
@@ -82,7 +105,7 @@ const Navbar = ({ onSectionChange }: NavbarProps) => {
         <ThemeToggle />
         
         <UserProfileDropdown
-          user={user}
+          user={displayUser}
           onProfileClick={handleProfileClick}
           onSettingsClick={handleSettingsClick}
           onBillingClick={handleBillingClick}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabaseAuthService } from '@/shared/services/supabaseAuthService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,14 +12,17 @@ export const AuthTestIndicator = () => {
   useEffect(() => {
     console.log('TEST-001: AuthTestIndicator mounted, setting up auth listener');
     
-    const unsubscribe = supabaseAuthService.onAuthStateChange((user, session) => {
+    const { data: { subscription } } = supabaseAuthService.onAuthStateChange((user, session) => {
       console.log('TEST-001: Auth state changed:', { user, session });
       setCurrentUser(user);
       setIsAuthenticated(supabaseAuthService.isAuthenticated());
       setAuthHeaders(supabaseAuthService.getAuthHeaders());
     });
 
-    return unsubscribe;
+    return () => {
+      console.log('TEST-001: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
